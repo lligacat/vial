@@ -1,0 +1,14 @@
+{
+  "name": "Volant · Gestió d'autoescoles",
+  "short_name": "Volant",
+  "description": "Reserva pràctiques, segueix el teu progrés i gestiona el teu carnet.",
+  "lang": "ca",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#171a20",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
