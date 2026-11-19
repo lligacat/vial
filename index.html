@@ -3,22 +3,158 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Vial · Gestió d'autoescoles</title>
-<meta name="theme-color" content="#171a20">
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Vial">
-<link rel="apple-touch-icon" href="icon.svg">
+<title>Vial · Programari de gestió per a autoescoles</title>
+<meta name="description" content="Vial reuneix reserves de pràctiques, seguiment del temari, tràmits, pagaments i exàmens en un únic espai de treball per a autoescoles.">
+<meta name="theme-color" content="#12161c">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2312202f' fill-rule='evenodd' d='M0 0H32V32H0Z M8 8H12.4L16 17L19.6 8H24L18 24H14Z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="landing.css">
 </head>
 <body>
-<div id="app"></div>
-<div id="modal-root"></div>
-<div id="toast" role="status" aria-live="polite"></div>
-<script src="app.js"></script>
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top" aria-label="Vial">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>
+      <span>VIAL</span>
+    </a>
+    <nav aria-label="Seccions">
+      <a href="#funcions">Funcions</a>
+      <a href="#perfils">Perfils</a>
+      <a href="#funcionament">Funcionament</a>
+      <a href="#permisos">Permisos</a>
+    </nav>
+    <a class="btn dark" href="app.html">Accedir</a>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap">
+    <p class="kicker">Programari de gestió per a autoescoles</p>
+    <h1>Tota l'autoescola en un únic espai de treball.</h1>
+    <p class="lead">Reserves de pràctiques, seguiment del temari, tràmits, pagaments i exàmens. Una sola eina per a l'alumne, el professor i la direcció del centre.</p>
+    <div class="cta">
+      <a class="btn dark lg" href="app.html">Accedir a la demostració</a>
+      <a class="btn line lg" href="#funcions">Veure les funcions</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="mock" aria-label="Vista prèvia del panell">
+      <div class="m-side">
+        <div class="m-logo"><i></i>VIAL</div>
+        <b>General</b><span class="on">Resum</span><span>Agenda</span>
+        <b>Gestió</b><span>Alumnes</span><span>Professors</span><span>Exàmens</span><span>Tràmits</span>
+        <b>Economia</b><span>Pagaments</span>
+      </div>
+      <div class="m-main">
+        <div class="m-bar"><span>Autoescola / <em>Resum</em></span></div>
+        <div class="m-kpis">
+          <div><small>Alumnes</small><strong>128</strong><small>10 permisos</small></div>
+          <div><small>Pràctiques avui</small><strong>14</strong><small>6 professors</small></div>
+          <div><small>Cobrat aquest mes</small><strong>12.480 €</strong><small>1.300 € pendent</small></div>
+          <div><small>Tràmits per revisar</small><strong>9</strong><small>3 urgents</small></div>
+        </div>
+        <div class="m-row">
+          <div class="m-chart">
+            <small>Ingressos · 6 mesos</small>
+            <div class="bars"><i style="--h:30%"></i><i style="--h:18%"></i><i style="--h:68%"></i><i style="--h:84%"></i><i style="--h:64%"></i><i class="cur" style="--h:42%"></i></div>
+          </div>
+          <div class="m-chart">
+            <small>Ocupació setmanal</small>
+            <div class="heat"><i></i><i class="a"></i><i></i><i class="b"></i><i class="a"></i><i></i><i class="c"></i><i></i><i class="a"></i><i class="b"></i><i class="c"></i><i></i><i></i><i class="a"></i><i class="b"></i><i class="a"></i><i class="c"></i><i></i><i class="a"></i><i></i><i class="b"></i><i class="c"></i><i class="a"></i><i></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Imatge il·lustrativa de la interfície amb dades de mostra.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap facts">
+    <div><strong>10</strong><span>permisos de conduir: AM, A1, A2, A, B, B+E, C1, C, C+E i D</span></div>
+    <div><strong>3</strong><span>perfils: alumne, professor i direcció del centre</span></div>
+    <div><strong>1</strong><span>espai de treball per a reserves, cobraments i exàmens</span></div>
+    <div><strong>Web i mòbil</strong><span>s'utilitza des del navegador i es pot instal·lar al telèfon</span></div>
+  </div>
+</section>
+
+<section id="funcions" class="sec">
+  <div class="wrap">
+    <p class="kicker">Funcions</p>
+    <h2>Cada procés del centre, resolt dins de l'aplicació.</h2>
+    <div class="grid3">
+      <article><h3>Reserva de pràctiques</h3><p>Calendari mensual amb les hores lliures de cada professor. L'alumne tria el dia i l'hora, i pot anul·lar-la amb un cost que depèn de l'antelació.</p></article>
+      <article><h3>Temari i registre de classes</h3><p>El professor puntua cada classe i anota què s'ha treballat. L'alumne consulta el seu nivell per apartat del temari i l'evolució de les notes.</p></article>
+      <article><h3>Pagaments i packs</h3><p>Carnet complet, bons de pràctiques amb descompte, quotes fraccionades i cupons. Factures descarregables i seguiment de les quotes pendents.</p></article>
+      <article><h3>Exàmens i historial</h3><p>El professor inscriu l'alumne a examen quan ho considera oportú. Cada intent queda registrat amb el resultat i les observacions.</p></article>
+      <article><h3>Tràmits</h3><p>Llista de tràmits per permís, amb estat de cada pas: pendent, en revisió o validat. La direcció els revisa des d'un únic quadre.</p></article>
+      <article><h3>Teoria en vídeo i tests</h3><p>Classes de teoria en vídeo organitzades per mòduls, amb seguiment del progrés, i tests d'autoavaluació adaptats al permís.</p></article>
+    </div>
+  </div>
+</section>
+
+<section id="perfils" class="sec alt">
+  <div class="wrap">
+    <p class="kicker">Perfils</p>
+    <h2>Una vista pensada per a cada persona.</h2>
+    <div class="grid3 prof">
+      <article>
+        <h3>Alumne</h3>
+        <ul><li>Reserva i anul·la pràctiques des del calendari</li><li>Recomanació de pràctiques setmanals</li><li>Temari, vídeos i tests</li><li>Pagaments, packs i factures</li><li>Inscripció a més permisos</li></ul>
+      </article>
+      <article>
+        <h3>Professor</h3>
+        <ul><li>Agenda del dia i de la setmana</li><li>Registre de la classe amb nota i temari</li><li>Estat «en directe» i punt de trobada</li><li>Inscripció d'alumnes a examen</li><li>Bloqueig d'hores no disponibles</li></ul>
+      </article>
+      <article>
+        <h3>Direcció del centre</h3>
+        <ul><li>Resum d'ingressos, classes i matrícules</li><li>Mapa d'ocupació de la setmana</li><li>Gestió de professors, vehicles i horaris</li><li>Packs, cupons i política de cancel·lació</li><li>Exportació a CSV per a la gestoria</li></ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="funcionament" class="sec">
+  <div class="wrap">
+    <p class="kicker">Funcionament</p>
+    <h2>De la matrícula a l'examen, en tres passos.</h2>
+    <ol class="steps">
+      <li><span>01</span><h3>Alta i pagament</h3><p>El centre dona d'alta l'alumne amb el permís corresponent. L'alumne paga el carnet complet o contracta un pack de pràctiques.</p></li>
+      <li><span>02</span><h3>Pràctiques i seguiment</h3><p>L'alumne reserva les classes. Després de cada una, el professor la puntua i en deixa constància al temari.</p></li>
+      <li><span>03</span><h3>Examen</h3><p>Quan l'alumne compleix els criteris, el professor l'inscriu a examen. Tots els intents queden a l'historial.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section id="permisos" class="sec alt">
+  <div class="wrap">
+    <p class="kicker">Permisos</p>
+    <h2>Preparat per a tots els permisos de conduir.</h2>
+    <p class="sub">Cada permís té el seu temari, els seus tràmits, els seus packs i els professors habilitats per impartir-lo.</p>
+    <div class="chips">
+      <span>AM</span><span>A1</span><span>A2</span><span>A</span><span>B</span><span>B+E</span><span>C1</span><span>C</span><span>C+E</span><span>D</span>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap">
+    <h2>Consulti l'aplicació amb dades de mostra.</h2>
+    <p>Pot entrar com a alumne, professor o direcció i provar totes les pantalles. No cal registrar-se.</p>
+    <a class="btn light lg" href="app.html">Accedir a la demostració</a>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <span class="brand sm"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg><span>VIAL</span></span>
+    <span>Prototip de demostració. Les dades que apareixen són fictícies.</span>
+  </div>
+</footer>
 </body>
 </html>

@@ -43,6 +43,7 @@ const ICONS = {
   copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+  out: '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>',
 };
 const ic = n => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 const icW = n => ic(n).replace('class="ico"', 'class="ico" style="stroke:#fff"');
@@ -531,7 +532,17 @@ const VIEWS = () => ({
   admin: { resum: vResum, agenda: vAgenda, alumnes: vAlumnes, profs: vProfs, examens: vExamsStaff, tramits: vTramitsAdmin, pagaments: vPagAdmin, videos: vVideosAdmin, config: vConfig },
 })[S.role];
 
+const LOGGED = () => { try { return sessionStorage.getItem('vial-in') === '1'; } catch { return true; } };
+function renderLogin() {
+  const P = [['alumne', 'Alumne', 'Laia Roca', 'Reserves, temari, pagaments i exàmens'], ['prof', 'Professor', 'Jordi Puig', 'Agenda, registre de classes i alumnes'], ['admin', 'Autoescola', 'Anna Bosch', 'Gestió completa del centre']];
+  $('#app').innerHTML = `<div class="login">
+    <section class="lg-l"><div class="logo">${LOGO}<span>VIAL</span></div><div><h2>Gestió integral d'autoescoles</h2><p>Reserves, seguiment del temari, tràmits, pagaments i exàmens en un únic espai de treball.</p></div><small>Entorn de demostració amb dades de mostra</small></section>
+    <section class="lg-r"><div class="lg-box"><h1>Accés al compte</h1><p class="muted">Tria el perfil amb el qual vols entrar a l'entorn de demostració. No cal cap contrasenya.</p>
+    <div class="lg-list">${P.map(p => `<button data-act="login" data-r="${p[0]}"><span class="avatar">${ini(p[2])}</span><span class="lg-t"><b>${p[1]}</b><small>${p[2]} · ${p[3]}</small></span>${ic('right')}</button>`).join('')}</div>
+    <a class="lg-back" href="index.html">← Tornar a la presentació</a></div></section></div>`;
+}
 function render() {
+  if (!LOGGED()) return renderLogin();
   const nav = NAV[S.role];
   if (!ui.page || !nav.some(n => n[0] === ui.page)) ui.page = nav[0][0];
   if (isProf()) ui.instr = S.meI;
@@ -548,16 +559,34 @@ function render() {
   const view = VIEWS()[ui.page]();
   const enr = S.role === 'alumne' ? enrollments() : [];
   const nn = notifs().length;
+  const GROUP = {
+    alumne: { inici: 'Resum', practiques: 'Formació', examens: 'Tràmits', pagaments: 'Compte' },
+    prof: { avui: 'Activitat', alumnes: 'Gestió' },
+    admin: { resum: 'General', alumnes: 'Gestió', pagaments: 'Economia', videos: 'Contingut', config: 'Sistema' },
+  }[S.role];
+  const cur = nav.find(n => n[0] === ui.page);
   $('#app').innerHTML = `
-  <div class="demo"><span>Entorn de demostració</span><div class="seg" role="group" aria-label="Canvia de vista">${[['alumne', 'Alumne'], ['prof', 'Professor'], ['admin', 'Autoescola']].map(r => `<button data-act="role" data-r="${r[0]}" class="${S.role === r[0] ? 'on' : ''}">${r[1]}</button>`).join('')}</div>
-  ${enr.length > 1 ? `<div class="seg" role="group" aria-label="Carnet en curs">${enr.map(e => `<button data-act="enr" data-id="${e.id}" class="${e.id === S.me ? 'on' : ''}">Carnet ${PERM(e.p).n}</button>`).join('')}</div>` : ''}</div>
-  <header class="hd">
-    <a class="logo" href="#" data-act="go" data-p="${nav[0][0]}">${LOGO}<span>VIAL</span></a>
-    <nav class="tabs" aria-label="Navegació">${nav.map(n => `<button data-act="go" data-p="${n[0]}" class="${ui.page === n[0] ? 'on' : ''}">${n[1]}${badge(n[0])}</button>`).join('')}</nav>
-    <div class="who"><button class="bell" data-act="bell" aria-label="Avisos">${ic('bell')}${nn ? `<i>${nn}</i>` : ''}</button><div class="hide-m" style="text-align:right"><b>${esc(nameOf())}</b><div class="sm muted">${esc(roleName)}</div></div><div class="avatar">${ini(nameOf())}</div></div>
-  </header>
-  <main class="main">${view}</main>
-  <footer class="ft"><span>${esc(S.brand.name)} · Vial</span><a href="#" data-act="reset">Restablir dades de mostra</a></footer>`;
+  <div class="shell">
+    <aside class="side">
+      <a class="logo" href="#" data-act="go" data-p="${nav[0][0]}">${LOGO}<span>VIAL</span></a>
+      <div class="side-org">${esc(S.brand.name)}</div>
+      <nav class="snav" aria-label="Navegació">${nav.map(n => `${GROUP[n[0]] ? `<div class="sgroup">${GROUP[n[0]]}</div>` : ''}<button data-act="go" data-p="${n[0]}" class="${ui.page === n[0] ? 'on' : ''}">${ic(n[2])}<span>${n[1]}</span>${badge(n[0])}</button>`).join('')}</nav>
+      <div class="side-foot"><div class="avatar">${ini(nameOf())}</div><div class="who-t"><b>${esc(nameOf())}</b><span>${esc(roleName)}</span></div><button class="icon-btn" data-act="logout" title="Tancar la sessió" aria-label="Tancar la sessió">${ic('out')}</button></div>
+    </aside>
+    <div class="work">
+      <div class="toolbar">
+        <div class="crumb"><span>${esc(S.brand.name)}</span><i>/</i><b>${cur ? cur[1] : ''}</b></div>
+        <div class="tb-r">
+          ${enr.length > 1 ? `<div class="seg" role="group" aria-label="Carnet en curs">${enr.map(x => `<button data-act="enr" data-id="${x.id}" class="${x.id === S.me ? 'on' : ''}">Carnet ${PERM(x.p).n}</button>`).join('')}</div>` : ''}
+          <label class="tb-l">Perfil de demostració</label>
+          <div class="seg" role="group" aria-label="Canvia de perfil">${[['alumne', 'Alumne'], ['prof', 'Professor'], ['admin', 'Autoescola']].map(r => `<button data-act="role" data-r="${r[0]}" class="${S.role === r[0] ? 'on' : ''}">${r[1]}</button>`).join('')}</div>
+          <button class="bell" data-act="bell" aria-label="Avisos">${ic('bell')}${nn ? `<i>${nn}</i>` : ''}</button>
+        </div>
+      </div>
+      <main class="main">${view}</main>
+      <div class="status"><span><i class="dot"></i>Sessió activa</span><span>${esc(S.brand.name)}</span><span>Dades de mostra, desades en aquest navegador</span><a href="#" data-act="reset">Restablir dades</a></div>
+    </div>
+  </div>`;
   if (ui.page !== 'classes') fakePlayerSync();
 }
 function fakePlayerSync() { if (ui.timer) { clearInterval(ui.timer); ui.timer = null; } }
@@ -1145,6 +1174,8 @@ document.addEventListener('click', e => {
     case 'close': closeModal(); break;
     case 'reset': if (confirm('Restablir totes les dades de mostra?')) { localStorage.removeItem(KEY); location.reload(); } break;
     case 'go': closeModal(); ui.page = D.p; if (D.p === 'classes') ui.fake = 0; render(); window.scrollTo(0, 0); break;
+    case 'login': try { sessionStorage.setItem('vial-in', '1'); } catch {} S.role = D.r; ui.page = null; ui.instr = D.r === 'alumne' ? 'all' : D.r === 'prof' ? S.meI : S.instr[0].id; save(); render(); window.scrollTo(0, 0); break;
+    case 'logout': try { sessionStorage.removeItem('vial-in'); } catch {} closeModal(); render(); window.scrollTo(0, 0); break;
     case 'role': S.role = D.r; ui.page = null; ui.instr = D.r === 'alumne' ? 'all' : D.r === 'prof' ? S.meI : S.instr[0].id; ui.thread = null; save(); render(); break;
     case 'enr': S.me = D.id; ui.instr = 'all'; ui.quiz = null; ui.vid = null; ui.picks = []; if (D.go) ui.page = D.go; save(); render(); break;
     case 'week': ui.weekOff = +D.n === 0 ? 0 : ui.weekOff + +D.n; render(); break;

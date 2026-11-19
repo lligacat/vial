@@ -3,7 +3,7 @@
   "short_name": "Vial",
   "description": "Reserva pràctiques, segueix el teu progrés i gestiona el teu carnet.",
   "lang": "ca",
-  "start_url": ".",
+  "start_url": "app.html",
   "scope": ".",
   "display": "standalone",
   "background_color": "#12202f",
