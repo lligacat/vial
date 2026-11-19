@@ -334,7 +334,7 @@ function seed() {
     ],
     msgs: [
       { id: 1, s: 's1', from: 'prof', f: 'Jordi Puig', t: 'Dimarts a les 10 ens veiem davant l\'autoescola. Porta les ulleres!', ts: Date.now() - 20 * 36e5 },
-      { id: 2, s: 's1', from: 'alumne', f: 'Laia Roca', t: 'Perfecte, fins dimarts!', ts: Date.now() - 19 * 36e5 },
+      { id: 2, s: 's1', from: 'alumne', f: 'Laia Roca', t: 'Conforme, fins dimarts.', ts: Date.now() - 19 * 36e5 },
     ],
     tests: { s1: [{ d: iso(addDays(t, -3)), n: 4, of: 6 }] },
     exams, policy: [{ h: 48, pct: 0 }, { h: 24, pct: 25 }, { h: 12, pct: 50 }, { h: 0, pct: 100 }],
@@ -348,8 +348,8 @@ let S = (() => { try { return JSON.parse(localStorage.getItem(KEY)) || seed(); }
 const save = () => localStorage.setItem(KEY, JSON.stringify(S));
 
 // ---------- marca: Volant (producte) + marca blanca de cada autoescola ----------
-S.brand = S.brand || { name: 'Autoescola Bages', c: '#3e6ae1' };
-const BRAND_COLORS = [['Blau', '#3e6ae1'], ['Verd', '#0f7a55'], ['Vermell', '#c8362d'], ['Taronja', '#c2410c'], ['Morat', '#6d3fc4'], ['Grafit', '#2b3340']];
+S.brand = S.brand || { name: 'Autoescola Bages', c: '#1d3b6e' }; if (S.brand.c === '#3e6ae1') S.brand.c = '#1d3b6e';
+const BRAND_COLORS = [['Blau marí', '#1d3b6e'], ['Verd', '#0f7a55'], ['Vermell', '#c8362d'], ['Taronja', '#c2410c'], ['Morat', '#6d3fc4'], ['Grafit', '#2b3340']];
 const LOGO = '<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M5 15.5h22M16 15.5V27" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="16" cy="15.5" r="2.6" fill="currentColor"/></svg>';
 const EX_L = { teoric: 'Examen teòric', circuit: 'Examen de circuit', practic: 'Examen pràctic' };
 function mixHex(h, t, w) { const n = x => parseInt(h.slice(x, x + 2), 16), m = x => Math.round(n(x) * (1 - w) + parseInt(t.slice(x, x + 2), 16) * w); return '#' + [1, 3, 5].map(x => m(x).toString(16).padStart(2, '0')).join(''); }
@@ -549,7 +549,7 @@ function render() {
   const enr = S.role === 'alumne' ? enrollments() : [];
   const nn = notifs().length;
   $('#app').innerHTML = `
-  <div class="demo"><span>Mode demostració</span><div class="seg" role="group" aria-label="Canvia de vista">${[['alumne', 'Alumne'], ['prof', 'Professor'], ['admin', 'Autoescola']].map(r => `<button data-act="role" data-r="${r[0]}" class="${S.role === r[0] ? 'on' : ''}">${r[1]}</button>`).join('')}</div>
+  <div class="demo"><span>Entorn de demostració</span><div class="seg" role="group" aria-label="Canvia de vista">${[['alumne', 'Alumne'], ['prof', 'Professor'], ['admin', 'Autoescola']].map(r => `<button data-act="role" data-r="${r[0]}" class="${S.role === r[0] ? 'on' : ''}">${r[1]}</button>`).join('')}</div>
   ${enr.length > 1 ? `<div class="seg" role="group" aria-label="Carnet en curs">${enr.map(e => `<button data-act="enr" data-id="${e.id}" class="${e.id === S.me ? 'on' : ''}">Carnet ${PERM(e.p).n}</button>`).join('')}</div>` : ''}</div>
   <header class="hd">
     <a class="logo" href="#" data-act="go" data-p="${nav[0][0]}">${LOGO}<span>VOLANT</span></a>
@@ -586,7 +586,7 @@ function vInici() {
   const nextVid = videosFor(me.id).find(v => !(S.seen[me.id] || []).includes(v.id));
   const last = doneLs(me.id).slice(-1)[0], av = scoreAvg(me.id), ex = nextExam(me.id);
   const days = ex ? Math.round((new Date(ex.d + 'T00:00') - today0()) / 864e5) : 0;
-  return `${head(`Hola, ${esc(me.n.split(' ')[0])}`, `Carnet ${P.n} · ${P.d}`)}
+  return `${head(`Benvingut, ${esc(me.n.split(' ')[0])}`, `Carnet ${P.n} · ${P.d}`)}
   <div class="grid g4" style="margin-bottom:16px">
     <div class="card kpi"><div class="l">Pràctiques al bo</div><div class="v">${me.bo}</div><div class="s">${me.bo ? 'disponibles per reservar' : 'compra un bo per continuar'}</div></div>
     <div class="card kpi"><div class="l">Pràctiques fetes</div><div class="v">${doneN(me.id)}</div><div class="s">${up.length} de reservades</div></div>
@@ -778,7 +778,7 @@ function vAvui() {
   const hoy = mine.filter(l => l.d === t).sort((a, b) => a.h - b.h), pend = toRegister(iid).filter(l => l.d !== t);
   const week = mine.filter(l => l.d > t && l.d <= iso(addDays(today0(), 7)) && l.st === 'reservada').sort((a, b) => (a.d + p2(a.h)).localeCompare(b.d + p2(b.h)));
   const done = mine.filter(l => l.st === 'feta' && l.score);
-  return `${head(`Hola, ${esc(ins(iid).n.split(' ')[0])}`, `${fmtData(t)} · Carnets ${permsTxt(ins(iid))}`)}
+  return `${head(`Agenda de ${esc(ins(iid).n.split(' ')[0])}`, `${fmtData(t)} · Carnets ${permsTxt(ins(iid))}`)}
   <div class="grid g4" style="margin-bottom:16px">
     <div class="card kpi"><div class="l">Classes avui</div><div class="v">${hoy.length}</div></div>
     <div class="card kpi"><div class="l">Per registrar</div><div class="v" style="${pend.length ? 'color:var(--bad)' : ''}">${toRegister(iid).length}</div><div class="s">posa nota i temari</div></div>
@@ -998,7 +998,7 @@ function recommend(sid) {
 
 function recCard(sid) {
   const r = recommend(sid), me = stu(sid);
-  if (r.ready) return `<div class="card rec"><div class="muted sm">El teu ritme</div><h2 style="font-size:24px;margin:4px 0 6px">Ja compleixes els criteris per a l'examen</h2><p class="muted">${r.ex ? 'Tens l\'examen convocat. Mantén una classe a la setmana per no perdre el ritme.' : 'Parla amb el teu professor: et pot apuntar a examen quan vulgui.'}</p></div>`;
+  if (r.ready) return `<div class="card rec"><div class="muted sm">El teu ritme</div><h2 style="font-size:24px;margin:4px 0 6px">Ja compleixes els criteris per a l'examen</h2><p class="muted">${r.ex ? 'Tens l\'examen convocat. Mantén una classe a la setmana per no perdre el ritme.' : 'El professor et pot apuntar a examen quan ho consideri oportú.'}</p></div>`;
   const left = Math.max(0, r.per - r.booked);
   return `<div class="card rec"><div class="rec-in"><div><div class="muted sm">Ritme recomanat</div><div class="rec-n">${r.per}<span> ${r.per === 1 ? 'pràctica' : 'pràctiques'} a la setmana</span></div>
   <p class="muted" style="max-width:48ch;margin-top:6px">Et falten unes <b style="color:var(--ink)">${r.need}</b> classes per estar a punt${r.ends ? `; amb aquest ritme, unes ${r.ends} ${r.ends === 1 ? 'setmana' : 'setmanes'}` : ''}${r.ex ? ' i tens l\'examen el ' + fmtData(r.ex.d) : ''}.</p>
@@ -1040,7 +1040,7 @@ function examModal(sid) {
   const r = readiness(s.id), types = examTypes(s.id), def = types.find(t => trv(s.id, t) !== 'ok') || 'practic';
   modal(`<h2>Apuntar a examen</h2>
   <div class="field"><label for="xs">Alumne</label><select id="xs" data-act="xs">${pool.map(x => `<option value="${x.id}" ${x.id === s.id ? 'selected' : ''}>${esc(x.n)} · ${PERM(x.p).n}${readiness(x.id).ok ? ' · llest' : ''}</option>`).join('')}</select></div>
-  ${r.ok ? `<div class="notice">${ic('check')}<div>Compleix els criteris recomanats per presentar-se.</div></div>` : `<div class="notice warn">${ic('info')}<div>Encara no compleix tots els criteris (${r.c.filter(x => !x.ok).map(x => x.l.toLowerCase()).join('; ')}). Pots apuntar-lo igualment si ho consideres.</div></div>`}
+  ${r.ok ? `<div class="notice">${ic('check')}<div>Compleix els criteris recomanats per presentar-se.</div></div>` : `<div class="notice warn">${ic('info')}<div>Encara no compleix tots els criteris (${r.c.filter(x => !x.ok).map(x => x.l.toLowerCase()).join('; ')}). Es pot apuntar igualment a criteri del professor.</div></div>`}
   <div class="grid g2"><div class="field"><label for="xt">Examen</label><select id="xt">${types.map(t => `<option value="${t}" ${t === def ? 'selected' : ''}>${EX_L[t]}${trv(s.id, t) === 'ok' ? ' (ja aprovat)' : ''}</option>`).join('')}</select></div><div class="field"><label for="xh">Hora</label><input id="xh" value="9:30"></div></div>
   <div class="grid g2"><div class="field"><label for="xd">Dia</label><input id="xd" type="date" value="${iso(addDays(today0(), 21))}" min="${iso(today0())}"></div><div class="field"><label for="xp">Lloc</label><input id="xp" value="DGT Manresa · Pista d'exàmens"></div></div>
   <div class="acts"><button class="btn" data-act="close">Cancel·lar</button><button class="btn pri" data-act="exam-ok">Apuntar i avisar l'alumne</button></div>`);
@@ -1286,7 +1286,7 @@ document.addEventListener('click', e => {
       const s = stu($('#xs').value), t = $('#xt').value, d = $('#xd').value, h = $('#xh').value.trim() || '9:00'; if (!d) return toast('Indica el dia');
       if (S.exams.some(e => e.s === s.id && e.t === t && e.res === 'convocat')) return toast('Ja té aquest examen convocat');
       S.exams.push({ id: nid(), s: s.id, t, d, h, pl: $('#xp').value.trim() || 'DGT Manresa', res: 'convocat', note: '', by: nameOf() });
-      say(s.id, `Has estat apuntat a l'${EX_L[t].toLowerCase()} el ${fmtData(d)} a les ${h}. Bona sort!`, isAdmin() ? 'admin' : 'prof', nameOf());
+      say(s.id, `Has estat apuntat a l'${EX_L[t].toLowerCase()} el ${fmtData(d)} a les ${h}. Es recomana arribar amb 15 minuts d'antelació.`, isAdmin() ? 'admin' : 'prof', nameOf());
       save(); closeModal(); render(); toast('Alumne apuntat a examen i avisat'); break;
     }
     case 'exam-res': resultModal(D.id); break;
@@ -1294,7 +1294,7 @@ document.addEventListener('click', e => {
       const e = S.exams.find(x => x.id == D.id), r = $('#xr').value; e.res = r; e.note = $('#xn').value.trim();
       if (r === 'aprovat') (S.tr[e.s] = S.tr[e.s] || {})[e.t] = 'ok';
       else S.pay.push({ id: nid(), s: e.s, c: 'Taxa DGT d\'examen · nou intent', a: 94.05, d: iso(today0()), st: 'pendent' });
-      say(e.s, r === 'aprovat' ? `Enhorabona! Has aprovat l'${EX_L[e.t].toLowerCase()}.` : r === 'suspes' ? `No has superat l'${EX_L[e.t].toLowerCase()}. Mira les observacions i prepara el proper intent.` : `Has quedat com a no presentat a l'${EX_L[e.t].toLowerCase()}.`, isAdmin() ? 'admin' : 'prof', nameOf());
+      say(e.s, r === 'aprovat' ? `Resultat: apte. Has superat l'${EX_L[e.t].toLowerCase()}.` : r === 'suspes' ? `No has superat l'${EX_L[e.t].toLowerCase()}. Mira les observacions i prepara el proper intent.` : `Has quedat com a no presentat a l'${EX_L[e.t].toLowerCase()}.`, isAdmin() ? 'admin' : 'prof', nameOf());
       save(); closeModal(); render(); toast('Resultat registrat'); break;
     }
     case 'exam-del': S.exams = S.exams.filter(x => x.id != D.id); save(); render(); toast('Convocatòria eliminada'); break;
