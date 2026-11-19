@@ -45,7 +45,7 @@
 
   <div class="wrap" id="video">
     <div class="player">
-      <video id="vv" controls preload="metadata" playsinline poster="media/vial-animacio-poster.jpg" aria-label="Vídeo de presentació de Vial">
+      <video id="vv" autoplay muted loop playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate" poster="media/vial-animacio-poster.jpg" aria-label="Vídeo de presentació de Vial">
         <source src="media/vial-animacio.mp4" type="video/mp4">
         El teu navegador no pot reproduir el vídeo.
       </video>
@@ -140,5 +140,6 @@
     <span>Prototip de demostració. Les dades que apareixen són fictícies.</span>
   </div>
 </footer>
+<script>(function(){var v=document.getElementById('vv');if(!v)return;v.muted=true;var p=function(){var r=v.play();if(r&&r.catch)r.catch(function(){});};p();document.addEventListener('visibilitychange',function(){if(!document.hidden)p();});window.addEventListener('pointerdown',p,{once:true});})();</script>
 </body>
 </html>
