@@ -1,5 +1,5 @@
 'use strict';
-/* Volant · panell d'autoescoles — prototip amb dades de mostra (localStorage)
+/* Vial · panell d'autoescoles — prototip amb dades de mostra (localStorage)
    Tres vistes (alumne, professor, autoescola), tots els carnets i diversos professors.
    Cada «alumne» és una matrícula: una persona pot tenir-ne més d'una (p. ex. B i A2). */
 
@@ -347,17 +347,17 @@ const KEY = 'ruta-autoescola-v5';
 let S = (() => { try { return JSON.parse(localStorage.getItem(KEY)) || seed(); } catch { return seed(); } })();
 const save = () => localStorage.setItem(KEY, JSON.stringify(S));
 
-// ---------- marca: Volant (producte) + marca blanca de cada autoescola ----------
+// ---------- marca: Vial (producte) + marca blanca de cada autoescola ----------
 S.brand = S.brand || { name: 'Autoescola Bages', c: '#1d3b6e' }; if (S.brand.c === '#3e6ae1') S.brand.c = '#1d3b6e';
 const BRAND_COLORS = [['Blau marí', '#1d3b6e'], ['Verd', '#0f7a55'], ['Vermell', '#c8362d'], ['Taronja', '#c2410c'], ['Morat', '#6d3fc4'], ['Grafit', '#2b3340']];
-const LOGO = '<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M5 15.5h22M16 15.5V27" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="16" cy="15.5" r="2.6" fill="currentColor"/></svg>';
+const LOGO = '<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M0 0H32V32H0Z M8 8H12.4L16 17L19.6 8H24L18 24H14Z"/></svg>';
 const EX_L = { teoric: 'Examen teòric', circuit: 'Examen de circuit', practic: 'Examen pràctic' };
 function mixHex(h, t, w) { const n = x => parseInt(h.slice(x, x + 2), 16), m = x => Math.round(n(x) * (1 - w) + parseInt(t.slice(x, x + 2), 16) * w); return '#' + [1, 3, 5].map(x => m(x).toString(16).padStart(2, '0')).join(''); }
 function applyBrand() {
   const r = document.documentElement.style, c = S.brand.c;
   r.setProperty('--accent', c); r.setProperty('--accent-d', mixHex(c, '#000000', .22));
   r.setProperty('--accent-soft', mixHex(c, '#ffffff', .9)); r.setProperty('--accent-l', mixHex(c, '#ffffff', .6));
-  document.title = `${S.brand.name} · Volant`;
+  document.title = `${S.brand.name} · Vial`;
 }
 applyBrand();
 const stu = id => S.stu.find(x => x.id === id);
@@ -506,8 +506,8 @@ function downloadReport(sid) {
 }
 function downloadIcs(sid) {
   const f = (d, h) => d.replace(/-/g, '') + 'T' + p2(h) + '0000';
-  const ev = upcoming(sid).map(l => `BEGIN:VEVENT\r\nUID:volant-${l.id}@autoescola\r\nDTSTAMP:${f(iso(today0()), 0)}\r\nDTSTART:${f(l.d, l.h)}\r\nDTEND:${f(l.d, l.h + 1)}\r\nSUMMARY:Pràctica de conducció (${PERM(stu(sid).p).n})\r\nLOCATION:${(l.pt || '').replace(/[,;]/g, ' ')}\r\nDESCRIPTION:Professor: ${ins(l.i).n} · ${vehOf(l)}\r\nBEGIN:VALARM\r\nTRIGGER:-PT2H\r\nACTION:DISPLAY\r\nDESCRIPTION:Pràctica en 2 hores\r\nEND:VALARM\r\nEND:VEVENT`).join('\r\n');
-  download('practiques.ics', 'text/calendar', `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Volant//Autoescola//CA\r\n${ev}\r\nEND:VCALENDAR`);
+  const ev = upcoming(sid).map(l => `BEGIN:VEVENT\r\nUID:vial-${l.id}@autoescola\r\nDTSTAMP:${f(iso(today0()), 0)}\r\nDTSTART:${f(l.d, l.h)}\r\nDTEND:${f(l.d, l.h + 1)}\r\nSUMMARY:Pràctica de conducció (${PERM(stu(sid).p).n})\r\nLOCATION:${(l.pt || '').replace(/[,;]/g, ' ')}\r\nDESCRIPTION:Professor: ${ins(l.i).n} · ${vehOf(l)}\r\nBEGIN:VALARM\r\nTRIGGER:-PT2H\r\nACTION:DISPLAY\r\nDESCRIPTION:Pràctica en 2 hores\r\nEND:VALARM\r\nEND:VEVENT`).join('\r\n');
+  download('practiques.ics', 'text/calendar', `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Vial//Autoescola//CA\r\n${ev}\r\nEND:VCALENDAR`);
 }
 
 // ---------- gràfics (SVG) ----------
@@ -552,12 +552,12 @@ function render() {
   <div class="demo"><span>Entorn de demostració</span><div class="seg" role="group" aria-label="Canvia de vista">${[['alumne', 'Alumne'], ['prof', 'Professor'], ['admin', 'Autoescola']].map(r => `<button data-act="role" data-r="${r[0]}" class="${S.role === r[0] ? 'on' : ''}">${r[1]}</button>`).join('')}</div>
   ${enr.length > 1 ? `<div class="seg" role="group" aria-label="Carnet en curs">${enr.map(e => `<button data-act="enr" data-id="${e.id}" class="${e.id === S.me ? 'on' : ''}">Carnet ${PERM(e.p).n}</button>`).join('')}</div>` : ''}</div>
   <header class="hd">
-    <a class="logo" href="#" data-act="go" data-p="${nav[0][0]}">${LOGO}<span>VOLANT</span></a>
+    <a class="logo" href="#" data-act="go" data-p="${nav[0][0]}">${LOGO}<span>VIAL</span></a>
     <nav class="tabs" aria-label="Navegació">${nav.map(n => `<button data-act="go" data-p="${n[0]}" class="${ui.page === n[0] ? 'on' : ''}">${n[1]}${badge(n[0])}</button>`).join('')}</nav>
     <div class="who"><button class="bell" data-act="bell" aria-label="Avisos">${ic('bell')}${nn ? `<i>${nn}</i>` : ''}</button><div class="hide-m" style="text-align:right"><b>${esc(nameOf())}</b><div class="sm muted">${esc(roleName)}</div></div><div class="avatar">${ini(nameOf())}</div></div>
   </header>
   <main class="main">${view}</main>
-  <footer class="ft"><span>${esc(S.brand.name)} · Volant</span><a href="#" data-act="reset">Restablir dades de mostra</a></footer>`;
+  <footer class="ft"><span>${esc(S.brand.name)} · Vial</span><a href="#" data-act="reset">Restablir dades de mostra</a></footer>`;
   if (ui.page !== 'classes') fakePlayerSync();
 }
 function fakePlayerSync() { if (ui.timer) { clearInterval(ui.timer); ui.timer = null; } }
@@ -947,7 +947,7 @@ function vConfig() {
   return `${head('Configuració', 'Marca de l\'autoescola, tarifes i packs amb descompte per carnet, codis promocionals i punts de trobada.')}
   <div class="card" style="margin-bottom:16px"><div class="card-h"><h2>Marca de l'autoescola</h2><span class="muted sm">Els alumnes i professors veuran el vostre nom i color</span></div>
   <div class="grid g2"><div><div class="field"><label for="bn">Nom de l'autoescola</label><input id="bn" data-act="brand-n" value="${esc(S.brand.name)}" maxlength="40"></div><label>Color principal</label><div class="swatches">${BRAND_COLORS.map(c => `<button class="swatch ${S.brand.c === c[1] ? 'on' : ''}" style="background:${c[1]}" data-act="brand-c" data-c="${c[1]}" aria-label="${c[0]}" title="${c[0]}"></button>`).join('')}</div></div>
-  <div><label>Vista prèvia</label><div class="brand-prev">${LOGO}<div><b>Volant</b><div class="sm" style="color:#9aa6b2">${esc(S.brand.name)}</div></div><span class="pill" style="margin-left:auto;background:var(--accent);color:#fff">Botó principal</span></div></div></div></div>
+  <div><label>Vista prèvia</label><div class="brand-prev">${LOGO}<div><b>Vial</b><div class="sm" style="color:#9aa6b2">${esc(S.brand.name)}</div></div><span class="pill" style="margin-left:auto;background:var(--accent);color:#fff">Botó principal</span></div></div></div></div>
   <div class="card" style="margin-bottom:16px"><div class="card-h"><h2>Política de cancel·lacions</h2><span class="muted sm">Percentatge del preu de la classe que es cobra segons l'antelació</span></div><div class="grid g4">${S.policy.slice().sort((x, y) => y.h - x.h).map((x, i, arr) => `<div class="field"><label>${i === 0 ? x.h + ' h o més' : x.h === 0 ? 'Menys de ' + arr[i - 1].h + ' h' : x.h + '–' + arr[i - 1].h + ' h'}</label><div class="row"><input type="number" min="0" max="100" value="${x.pct}" data-act="pol" data-h="${x.h}" aria-label="Percentatge"><span class="muted">%</span></div></div>`).join('')}</div></div>
   <div class="chips">${PERMITS.map(p => `<button class="chip ${ui.cfgP === p.k ? 'on' : ''}" data-act="cfgp" data-k="${p.k}">${p.n}</button>`).join('')}</div>
   <div class="card flush scroll-x" style="margin-bottom:16px"><div class="card-h" style="padding:20px 24px 0"><h2>Packs del carnet ${P.n} · ${P.d}</h2><div class="row"><span class="muted sm">Preu hora: ${eur(P.h)}</span><button class="btn sm" data-act="newpack">${ic('plus')} Nou pack</button></div></div><table><thead><tr><th>Pack</th><th>Hores</th><th>Preu (€)</th><th>€/hora</th><th>Estalvi alumne</th><th>Visible</th><th></th></tr></thead><tbody>

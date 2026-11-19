@@ -1,13 +1,13 @@
 {
-  "name": "Volant · Gestió d'autoescoles",
-  "short_name": "Volant",
+  "name": "Vial · Gestió d'autoescoles",
+  "short_name": "Vial",
   "description": "Reserva pràctiques, segueix el teu progrés i gestiona el teu carnet.",
   "lang": "ca",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#171a20",
+  "background_color": "#12202f",
+  "theme_color": "#12202f",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
