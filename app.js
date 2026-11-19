@@ -348,9 +348,9 @@ let S = (() => { try { return JSON.parse(localStorage.getItem(KEY)) || seed(); }
 const save = () => localStorage.setItem(KEY, JSON.stringify(S));
 
 // ---------- marca: Vial (producte) + marca blanca de cada autoescola ----------
-S.brand = S.brand || { name: 'Autoescola Bages', c: '#1d3b6e' }; if (S.brand.c === '#3e6ae1') S.brand.c = '#1d3b6e';
-const BRAND_COLORS = [['Blau marí', '#1d3b6e'], ['Verd', '#0f7a55'], ['Vermell', '#c8362d'], ['Taronja', '#c2410c'], ['Morat', '#6d3fc4'], ['Grafit', '#2b3340']];
-const LOGO = '<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M0 0H32V32H0Z M8 8H12.4L16 17L19.6 8H24L18 24H14Z"/></svg>';
+S.brand = S.brand || { name: 'Autoescola Bages', c: '#3e6ae1' }; if (S.brand.c === '#1d3b6e') S.brand.c = '#3e6ae1';
+const BRAND_COLORS = [['Blau', '#3e6ae1'], ['Verd', '#0f7a55'], ['Vermell', '#c8362d'], ['Taronja', '#c2410c'], ['Morat', '#6d3fc4'], ['Grafit', '#2b3340']];
+const LOGO = '<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="miter" stroke-linecap="butt"/></svg>';
 const EX_L = { teoric: 'Examen teòric', circuit: 'Examen de circuit', practic: 'Examen pràctic' };
 function mixHex(h, t, w) { const n = x => parseInt(h.slice(x, x + 2), 16), m = x => Math.round(n(x) * (1 - w) + parseInt(t.slice(x, x + 2), 16) * w); return '#' + [1, 3, 5].map(x => m(x).toString(16).padStart(2, '0')).join(''); }
 function applyBrand() {
@@ -512,8 +512,8 @@ function downloadIcs(sid) {
 
 // ---------- gràfics (SVG) ----------
 function barChart(data, unit, mx) {
-  const W = 360, H = 150, top = 18, bot = 22, max = mx || Math.max(1, ...data.map(d => d.v)), bw = W / Math.max(1, data.length);
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gràfic de barres" style="width:100%;max-height:190px;height:auto">${[0, 0.5, 1].map(f => `<line x1="0" x2="${W}" y1="${top + (H - top - bot) * (1 - f)}" y2="${top + (H - top - bot) * (1 - f)}" stroke="#e3e6ea"/>`).join('')}${data.map((d, i) => { const h = (H - top - bot) * d.v / max, x = i * bw + bw * 0.28, w = bw * 0.44, y = H - bot - h; return `<rect x="${x}" y="${y}" width="${w}" height="${Math.max(h, 0)}" rx="1" style="fill:var(${i === data.length - 1 ? '--accent' : '--accent-l'})"/><text x="${x + w / 2}" y="${y - 6}" text-anchor="middle" font-size="9.5" font-weight="600" fill="#12202f">${d.v ? d.v.toLocaleString('ca-ES', { maximumFractionDigits: 0 }) + unit : ''}</text><text x="${x + w / 2}" y="${H - 7}" text-anchor="middle" font-size="9.5" fill="#5b6776">${d.l}</text>`; }).join('')}</svg>`;
+  const W = 360, H = 160, top = 20, bot = 22, max = mx || Math.max(1, ...data.map(d => d.v)), bw = W / Math.max(1, data.length);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gràfic de barres" style="width:100%;max-height:190px;height:auto">${[0, 0.5, 1].map(f => `<line x1="0" x2="${W}" y1="${top + (H - top - bot) * (1 - f)}" y2="${top + (H - top - bot) * (1 - f)}" stroke="#e3e6ea"/>`).join('')}${data.map((d, i) => { const h = (H - top - bot) * d.v / max, x = i * bw + bw * 0.28, w = bw * 0.44, y = H - bot - h; return `<rect x="${x}" y="${y}" width="${w}" height="${Math.max(h, 0)}" rx="1" style="fill:var(${i === data.length - 1 ? '--accent' : '--accent-l'})"/><text x="${x + w / 2}" y="${y - 6}" text-anchor="middle" font-size="10.5" font-weight="600" fill="#12202f">${d.v ? d.v.toLocaleString('ca-ES', { maximumFractionDigits: 0 }) + unit : ''}</text><text x="${x + w / 2}" y="${H - 7}" text-anchor="middle" font-size="10.5" fill="#5b6776">${d.l}</text>`; }).join('')}</svg>`;
 }
 function revenueData() {
   const now = today0(); return Array.from({ length: 6 }, (_, i) => { const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1), key = `${d.getFullYear()}-${p2(d.getMonth() + 1)}`; return { l: MESOS[d.getMonth()], v: S.pay.filter(x => x.st === 'pagat' && x.d.slice(0, 7) === key).reduce((a, x) => a + x.a, 0) }; });
