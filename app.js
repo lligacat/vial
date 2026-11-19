@@ -346,20 +346,30 @@ function seed() {
 
 const KEY = 'ruta-autoescola-v5';
 let S = (() => { try { return JSON.parse(localStorage.getItem(KEY)) || seed(); } catch { return seed(); } })();
-const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+try { const tb = JSON.parse(sessionStorage.getItem('vial-tab') || 'null'); if (tb) Object.assign(S, tb); } catch { }
+const save = () => { try { sessionStorage.setItem('vial-tab', JSON.stringify({ role: S.role, me: S.me, meI: S.meI })); } catch { } localStorage.setItem(KEY, JSON.stringify(S)); };
 
 // ---------- marca: Vial (producte) + marca blanca de cada autoescola ----------
 S.brand = S.brand || { name: 'Autoescola Bages', c: '#3e6ae1' }; if (S.brand.c === '#1d3b6e') S.brand.c = '#3e6ae1';
-S.cars = S.cars || seedCars();
+S.cars = S.cars || seedCars(); S.mods = S.mods || {};
 const BRAND_COLORS = [['Blau', '#3e6ae1'], ['Verd', '#0f7a55'], ['Vermell', '#c8362d'], ['Taronja', '#c2410c'], ['Morat', '#6d3fc4'], ['Grafit', '#2b3340']];
 const LOGO = '<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="miter" stroke-linecap="butt"/></svg>';
+const wl = () => !!S.brand.wl;
+function monogram() { const w = S.brand.name.split(/\s+/).filter(x => x && !/^autoescola$/i.test(x)); const t = (w.length > 1 ? w[0][0] + w[1][0] : (w[0] || 'A').slice(0, 2)).toUpperCase(); return t; }
+const logoHtml = () => wl()
+  ? `<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" style="fill:var(--accent)"/><text x="16" y="21.5" text-anchor="middle" font-size="14" font-weight="600" fill="#fff" font-family="Inter Tight, sans-serif">${esc(monogram())}</text></svg><span class="wl-n">${esc(S.brand.name)}</span>`
+  : `${LOGO}<span>VIAL</span>`;
+const MODS = [['embuts', 'Fases i embuts'], ['disponibilitat', 'Disponibilitat'], ['preinscripcions', 'Preinscripcions'], ['vehicles', 'Vehicles'], ['absencies', 'Avisos d\'absència'], ['liquidacio', 'Liquidació de professors'], ['videos', 'Classes en vídeo'], ['assistencia', 'Assistència']];
+function modsCard() {
+  return `<div class="card" style="margin-bottom:16px"><div class="card-h"><h2>Mòduls activats</h2><span class="muted sm">Cada autoescola veu només el que contracta</span></div><div class="grid g4">${MODS.map(m => `<label class="chk-row" style="justify-content:space-between;border:1px solid var(--pl);border-radius:3px;padding:10px 12px;margin:0"><span>${m[1]}</span><span class="sw"><input type="checkbox" data-act="mod" data-k="${m[0]}" ${S.mods[m[0]] === false ? '' : 'checked'}><span></span></span></label>`).join('')}</div></div>`;
+}
 const EX_L = { teoric: 'Examen teòric', circuit: 'Examen de circuit', practic: 'Examen pràctic' };
 function mixHex(h, t, w) { const n = x => parseInt(h.slice(x, x + 2), 16), m = x => Math.round(n(x) * (1 - w) + parseInt(t.slice(x, x + 2), 16) * w); return '#' + [1, 3, 5].map(x => m(x).toString(16).padStart(2, '0')).join(''); }
 function applyBrand() {
   const r = document.documentElement.style, c = S.brand.c;
   r.setProperty('--accent', c); r.setProperty('--accent-d', mixHex(c, '#000000', .22));
   r.setProperty('--accent-soft', mixHex(c, '#ffffff', .9)); r.setProperty('--accent-l', mixHex(c, '#ffffff', .6));
-  document.title = `${S.brand.name} · Vial`;
+  document.title = S.brand.wl ? S.brand.name : `${S.brand.name} · Vial`;
 }
 applyBrand();
 const stu = id => S.stu.find(x => x.id === id);
@@ -538,14 +548,14 @@ const LOGGED = () => { try { return sessionStorage.getItem('vial-in') === '1'; }
 function renderLogin() {
   const P = [['alumne', 'Alumne', 'Laia Roca', 'Reserves, temari, pagaments i exàmens'], ['prof', 'Professor', 'Jordi Puig', 'Agenda, registre de classes i alumnes'], ['admin', 'Autoescola', 'Anna Bosch', 'Gestió completa del centre']];
   $('#app').innerHTML = `<div class="login">
-    <section class="lg-l"><div class="logo">${LOGO}<span>VIAL</span></div><div><h2>Gestió integral d'autoescoles</h2><p>Reserves, seguiment del temari, tràmits, pagaments i exàmens en un únic espai de treball.</p></div><small>Entorn de demostració amb dades de mostra</small></section>
+    <section class="lg-l"><div class="logo ${wl() ? 'wl' : ''}">${logoHtml()}</div><div><h2>Gestió integral d'autoescoles</h2><p>Reserves, seguiment del temari, tràmits, pagaments i exàmens en un únic espai de treball.</p></div><small>Entorn de demostració amb dades de mostra</small></section>
     <section class="lg-r"><div class="lg-box"><h1>Accés al compte</h1><p class="muted">Tria el perfil amb el qual vols entrar a l'entorn de demostració. No cal cap contrasenya.</p>
     <div class="lg-list">${P.map(p => `<button data-act="login" data-r="${p[0]}"><span class="avatar">${ini(p[2])}</span><span class="lg-t"><b>${p[1]}</b><small>${p[2]} · ${p[3]}</small></span>${ic('right')}</button>`).join('')}</div>
-    <a class="lg-back" href="index.html">← Tornar a la presentació</a></div></section></div>`;
+    ${wl() ? '' : '<a class="lg-back" href="index.html">← Tornar a la presentació</a>'}</div></section></div>`;
 }
 function render() {
   if (!LOGGED()) return renderLogin();
-  const nav = NAV[S.role];
+  const nav = NAV[S.role].filter(n => S.mods[n[0]] !== false);
   if (isAdmin()) syncPre();
   if (!ui.page || !nav.some(n => n[0] === ui.page)) ui.page = nav[0][0];
   if (isProf()) ui.instr = S.meI;
@@ -574,8 +584,8 @@ function render() {
   $('#app').innerHTML = `
   <div class="shell">
     <aside class="side">
-      <a class="logo" href="#" data-act="go" data-p="${nav[0][0]}">${LOGO}<span>VIAL</span></a>
-      <div class="side-org">${esc(S.brand.name)}</div>
+      <a class="logo ${wl() ? 'wl' : ''}" href="#" data-act="go" data-p="${nav[0][0]}">${logoHtml()}</a>
+      <div class="side-org">${wl() ? 'Àrea privada' : esc(S.brand.name)}</div>
       <nav class="snav" aria-label="Navegació">${nav.map(n => `${GROUP[n[0]] ? `<div class="sgroup">${GROUP[n[0]]}</div>` : ''}<button data-act="go" data-p="${n[0]}" class="${ui.page === n[0] ? 'on' : ''}">${ic(n[2])}<span>${n[1]}</span>${badge(n[0])}</button>`).join('')}</nav>
       <div class="side-foot"><div class="avatar">${ini(nameOf())}</div><div class="who-t"><b>${esc(nameOf())}</b><span>${esc(roleName)}</span></div><button class="icon-btn" data-act="logout" title="Tancar la sessió" aria-label="Tancar la sessió">${ic('out')}</button></div>
     </aside>
@@ -591,7 +601,7 @@ function render() {
         </div>
       </div>
       <main class="main">${view}</main>
-      <div class="status"><span><i class="dot"></i>Sessió activa</span><span>${esc(S.brand.name)}</span><span>Dades de mostra, desades en aquest navegador</span><a href="#" data-act="reset">Restablir dades</a></div>
+      <div class="status"><span><i class="dot"></i>Sessió activa</span><span>${esc(S.brand.name)}</span>${wl() ? '<span>Tecnologia Vial</span>' : ''}<span>Dades de mostra, desades en aquest navegador</span><a href="#" data-act="reset">Restablir dades</a></div>
     </div>
   </div>`;
   if (ui.page !== 'classes') fakePlayerSync();
@@ -985,8 +995,9 @@ function vConfig() {
   const P = PERM(ui.cfgP), packs = S.packs.filter(k => k.p === P.k);
   return `${head('Configuració', 'Marca de l\'autoescola, tarifes i packs amb descompte per carnet, codis promocionals i punts de trobada.')}
   <div class="card" style="margin-bottom:16px"><div class="card-h"><h2>Marca de l'autoescola</h2><span class="muted sm">Els alumnes i professors veuran el vostre nom i color</span></div>
-  <div class="grid g2"><div><div class="field"><label for="bn">Nom de l'autoescola</label><input id="bn" data-act="brand-n" value="${esc(S.brand.name)}" maxlength="40"></div><label>Color principal</label><div class="swatches">${BRAND_COLORS.map(c => `<button class="swatch ${S.brand.c === c[1] ? 'on' : ''}" style="background:${c[1]}" data-act="brand-c" data-c="${c[1]}" aria-label="${c[0]}" title="${c[0]}"></button>`).join('')}</div></div>
-  <div><label>Vista prèvia</label><div class="brand-prev">${LOGO}<div><b>Vial</b><div class="sm" style="color:#9aa6b2">${esc(S.brand.name)}</div></div><span class="pill" style="margin-left:auto;background:var(--accent);color:#fff">Botó principal</span></div></div></div></div>
+  <div class="grid g2"><div><div class="field"><label for="bn">Nom de l'autoescola</label><input id="bn" data-act="brand-n" value="${esc(S.brand.name)}" maxlength="40"></div><label>Color principal</label><div class="swatches">${BRAND_COLORS.map(c => `<button class="swatch ${S.brand.c === c[1] ? 'on' : ''}" style="background:${c[1]}" data-act="brand-c" data-c="${c[1]}" aria-label="${c[0]}" title="${c[0]}"></button>`).join('')}</div><label class="chk-row" style="margin-top:14px"><input type="checkbox" data-act="brand-wl" ${wl() ? 'checked' : ''} style="width:auto;min-height:0"> Mostrar la meva marca en lloc de Vial</label></div>
+  <div><label>Vista prèvia</label><div class="brand-prev">${wl() ? `<div class="logo wl" style="color:#fff">${logoHtml()}</div>` : `${LOGO}<div><b>Vial</b><div class="sm" style="color:#9aa6b2">${esc(S.brand.name)}</div></div>`}<span class="pill" style="margin-left:auto;background:var(--accent);color:#fff">Botó principal</span></div></div></div></div>
+  ${modsCard()}
   <div class="card" style="margin-bottom:16px"><div class="card-h"><h2>Política de cancel·lacions</h2><span class="muted sm">Percentatge del preu de la classe que es cobra segons l'antelació</span></div><div class="grid g4">${S.policy.slice().sort((x, y) => y.h - x.h).map((x, i, arr) => `<div class="field"><label>${i === 0 ? x.h + ' h o més' : x.h === 0 ? 'Menys de ' + arr[i - 1].h + ' h' : x.h + '–' + arr[i - 1].h + ' h'}</label><div class="row"><input type="number" min="0" max="100" value="${x.pct}" data-act="pol" data-h="${x.h}" aria-label="Percentatge"><span class="muted">%</span></div></div>`).join('')}</div></div>
   <div class="chips">${PERMITS.map(p => `<button class="chip ${ui.cfgP === p.k ? 'on' : ''}" data-act="cfgp" data-k="${p.k}">${p.n}</button>`).join('')}</div>
   <div class="card flush scroll-x" style="margin-bottom:16px"><div class="card-h" style="padding:20px 24px 0"><h2>Packs del carnet ${P.n} · ${P.d}</h2><div class="row"><span class="muted sm">Preu hora: ${eur(P.h)}</span><button class="btn sm" data-act="newpack">${ic('plus')} Nou pack</button></div></div><table><thead><tr><th>Pack</th><th>Hores</th><th>Preu (€)</th><th>€/hora</th><th>Estalvi alumne</th><th>Visible</th><th></th></tr></thead><tbody>
@@ -1639,7 +1650,7 @@ document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act, D = el.dataset;
   if (a === 'close-ov') { if (e.target === el) closeModal(); return; }
-  if (['search', 'instr', 'cscore', 'cnote', 'cnext', 'packp', 'packon', 'quotes', 'method', 'cabs', 'xs', 'pol', 'rate', 'liqm', 'imp-f', 'imp-t', 'gs'].includes(a)) return;
+  if (['search', 'instr', 'cscore', 'cnote', 'cnext', 'packp', 'packon', 'quotes', 'method', 'cabs', 'xs', 'pol', 'rate', 'liqm', 'imp-f', 'imp-t', 'gs', 'brand-wl', 'mod'].includes(a)) return;
   if (a === 'bell') return bellModal();
   if (a === 'brand-n') return;
   if (a === 'brand-c') { S.brand.c = D.c; applyBrand(); save(); render(); toast('Color actualitzat'); return; }
@@ -1922,6 +1933,8 @@ document.addEventListener('change', e => {
   else if (a === 'pol') { S.policy.find(x => x.h == D.h).pct = Math.max(0, Math.min(100, +e.target.value || 0)); save(); render(); toast('Política actualitzada'); }
   else if (a === 'quotes') { ui.co.quotes = +e.target.value; checkoutModal(); }
   else if (a === 'method') { ui.co.method = e.target.value; }
+  else if (a === 'brand-wl') { S.brand.wl = e.target.checked; applyBrand(); save(); render(); toast(e.target.checked ? 'Ara es mostra la teva marca' : 'Es torna a mostrar Vial'); }
+  else if (a === 'mod') { S.mods[D.k] = e.target.checked; save(); render(); }
   else if (a === 'liqm') { ui.liqM = e.target.value; render(); }
   else if (a === 'rate') { ins(D.id).rate = Math.max(0, +e.target.value || 0); save(); render(); toast('Tarifa actualitzada'); }
   else if (a === 'imp-f') {
@@ -1945,3 +1958,11 @@ function markSeen(id) {
 }
 render();
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
+window.addEventListener('storage', e => {
+  if (e.key !== KEY || !e.newValue) return;
+  try {
+    const keep = { role: S.role, me: S.me, meI: S.meI }, ci = document.querySelector('#chat-in'), v = ci ? ci.value : null;
+    S = JSON.parse(e.newValue); Object.assign(S, keep); S.mods = S.mods || {}; applyBrand(); render();
+    if (v) { const n = document.querySelector('#chat-in'); if (n) n.value = v; }
+  } catch { }
+});
