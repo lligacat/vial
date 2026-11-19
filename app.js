@@ -365,6 +365,7 @@ applyBrand();
 const stu = id => S.stu.find(x => x.id === id);
 const ins = id => S.instr.find(x => x.id === id);
 const nid = () => ++S.nextId;
+migrate4();
 const isAdmin = () => S.role === 'admin', isProf = () => S.role === 'prof';
 function download(name, mime, content) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], { type: mime })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
@@ -373,9 +374,9 @@ function download(name, mime, content) {
 // ---------- UI global ----------
 const ui = { page: null, weekOff: 0, instr: 'all', vid: 'v5', fake: 0, timer: null, q: '', quiz: null, payFilter: 'tots', thread: null, close: null, co: null, permF: 'all', cfgP: 'B', cal: null, picks: [] };
 const NAV = {
-  alumne: [['inici', 'Inici', 'home'], ['practiques', 'Pràctiques', 'cal'], ['temari', 'Temari', 'book'], ['classes', 'Vídeos', 'video'], ['tests', 'Tests', 'test'], ['examens', 'Exàmens', 'flag'], ['tramits', 'Tràmits', 'doc'], ['pagaments', 'Pagaments', 'card'], ['carnets', 'Més carnets', 'plus']],
-  prof: [['avui', 'Avui', 'home'], ['agenda', 'Agenda', 'cal'], ['alumnes', 'Alumnes', 'users'], ['examens', 'Exàmens', 'flag']],
-  admin: [['resum', 'Resum', 'chart'], ['agenda', 'Agenda', 'cal'], ['alumnes', 'Alumnes', 'users'], ['profs', 'Professors', 'award'], ['vehicles', 'Vehicles', 'car'], ['examens', 'Exàmens', 'flag'], ['tramits', 'Tràmits', 'doc'], ['pagaments', 'Pagaments', 'card'], ['liquidacio', 'Liquidació', 'chart'], ['videos', 'Vídeos', 'video'], ['config', 'Configuració', 'cog']],
+  alumne: [['inici', 'Inici', 'home'], ['practiques', 'Pràctiques', 'cal'], ['temari', 'Temari', 'book'], ['classes', 'Vídeos', 'video'], ['tests', 'Tests', 'test'], ['examens', 'Exàmens', 'flag'], ['tramits', 'Tràmits', 'doc'], ['pagaments', 'Pagaments', 'card'], ['tarifes', 'Preus i packs', 'chart'], ['carnets', 'Més carnets', 'plus'], ['assistencia', 'Assistència', 'msg']],
+  prof: [['avui', 'Avui', 'home'], ['agenda', 'Agenda', 'cal'], ['alumnes', 'Alumnes', 'users'], ['examens', 'Exàmens', 'flag'], ['assistencia', 'Assistència', 'msg']],
+  admin: [['resum', 'Resum', 'chart'], ['embuts', 'Fases i embuts', 'chart'], ['agenda', 'Agenda', 'cal'], ['disponibilitat', 'Disponibilitat', 'clock'], ['preinscripcions', 'Preinscripcions', 'plus'], ['alumnes', 'Alumnes', 'users'], ['profs', 'Professors', 'award'], ['vehicles', 'Vehicles', 'car'], ['examens', 'Exàmens', 'flag'], ['tramits', 'Tràmits', 'doc'], ['absencies', 'Avisos d\'absència', 'info'], ['pagaments', 'Pagaments', 'card'], ['liquidacio', 'Liquidació', 'chart'], ['assistencia', 'Assistència', 'msg'], ['videos', 'Vídeos', 'video'], ['config', 'Configuració', 'cog']],
 };
 function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('show'), 2800); }
 function modal(html, wide) {
@@ -528,9 +529,9 @@ function weeklyData() {
 // ---------- render principal ----------
 const head = (t, s, extra = '') => `<div class="page-h row between wrap"><div><h1>${t}</h1>${s ? `<p>${s}</p>` : ''}</div>${extra}</div>`;
 const VIEWS = () => ({
-  alumne: { inici: vInici, practiques: vPractiques, temari: vTemari, classes: vClasses, tests: vTests, examens: vExams, tramits: vTramits, pagaments: vPagaments, carnets: vCarnets },
-  prof: { avui: vAvui, agenda: vAgenda, alumnes: vAlumnes, examens: vExamsStaff },
-  admin: { resum: vResum, agenda: vAgenda, alumnes: vAlumnes, profs: vProfs, vehicles: vVeh, examens: vExamsStaff, tramits: vTramitsAdmin, pagaments: vPagAdmin, liquidacio: vLiq, videos: vVideosAdmin, config: vConfig },
+  alumne: { inici: vInici, practiques: vPractiques, temari: vTemari, classes: vClasses, tests: vTests, examens: vExams, tramits: vTramits, pagaments: vPagaments, tarifes: vTarifes, carnets: vCarnets, assistencia: vAssist },
+  prof: { avui: vAvui, agenda: vAgenda, alumnes: vAlumnes, examens: vExamsStaff, assistencia: vAssist },
+  admin: { resum: vResum, embuts: vEmbuts, agenda: vAgenda, disponibilitat: vDisp, preinscripcions: vPre, alumnes: vAlumnes, profs: vProfs, vehicles: vVeh, examens: vExamsStaff, tramits: vTramitsAdmin, absencies: vAbs, pagaments: vPagAdmin, liquidacio: vLiq, assistencia: vAssist, videos: vVideosAdmin, config: vConfig },
 })[S.role];
 
 const LOGGED = () => { try { return sessionStorage.getItem('vial-in') === '1'; } catch { return true; } };
@@ -545,6 +546,7 @@ function renderLogin() {
 function render() {
   if (!LOGGED()) return renderLogin();
   const nav = NAV[S.role];
+  if (isAdmin()) syncPre();
   if (!ui.page || !nav.some(n => n[0] === ui.page)) ui.page = nav[0][0];
   if (isProf()) ui.instr = S.meI;
   else if (S.role === 'alumne') { if (ui.instr !== 'all' && !(ins(ui.instr) && qualified(ins(ui.instr), stu(S.me).p))) ui.instr = 'all'; }
@@ -554,6 +556,9 @@ function render() {
     if (isAdmin() && k === 'tramits') n = trToReview();
     if (isAdmin() && k === 'pagaments') n = payPending().length;
     if (isProf() && k === 'avui') n = toRegister(S.meI).length;
+    if (isAdmin() && k === 'absencies') n = absPending().length;
+    if (isAdmin() && k === 'preinscripcions') n = S.pre.filter(x => x.st === 'nova').length;
+    if (k === 'assistencia') n = unreadAll();
     return n ? `<i class="badge">${n}</i>` : '';
   };
   const roleName = { alumne: `Permís ${PERM(stu(S.me).p).n} · ${PERM(stu(S.me).p).d}`, prof: 'Professor · ' + permsTxt(ins(S.meI)), admin: 'Administració' }[S.role];
@@ -561,9 +566,9 @@ function render() {
   const enr = S.role === 'alumne' ? enrollments() : [];
   const nn = notifs().length;
   const GROUP = {
-    alumne: { inici: 'Resum', practiques: 'Formació', examens: 'Tràmits', pagaments: 'Compte' },
-    prof: { avui: 'Activitat', alumnes: 'Gestió' },
-    admin: { resum: 'General', alumnes: 'Gestió', pagaments: 'Economia', videos: 'Contingut', config: 'Sistema' },
+    alumne: { inici: 'Resum', practiques: 'Formació', examens: 'Tràmits', pagaments: 'Compte', assistencia: 'Ajuda' },
+    prof: { avui: 'Activitat', alumnes: 'Gestió', assistencia: 'Ajuda' },
+    admin: { resum: 'General', embuts: 'Anàlisi', agenda: 'Planificació', preinscripcions: 'Gestió', pagaments: 'Economia', assistencia: 'Atenció', videos: 'Contingut', config: 'Sistema' },
   }[S.role];
   const cur = nav.find(n => n[0] === ui.page);
   $('#app').innerHTML = `
@@ -577,6 +582,7 @@ function render() {
     <div class="work">
       <div class="toolbar">
         <div class="crumb"><span>${esc(S.brand.name)}</span><i>/</i><b>${cur ? cur[1] : ''}</b></div>
+        ${isAdmin() || isProf() ? '<div class="gs"><input id="gs" data-act="gs" type="search" placeholder="Cerca alumne o professor" autocomplete="off" aria-label="Cerca"><div id="gs-r" class="gs-r"></div></div>' : ''}
         <div class="tb-r">
           ${enr.length > 1 ? `<div class="seg" role="group" aria-label="Carnet en curs">${enr.map(x => `<button data-act="enr" data-id="${x.id}" class="${x.id === S.me ? 'on' : ''}">Carnet ${PERM(x.p).n}</button>`).join('')}</div>` : ''}
           <label class="tb-l">Perfil de demostració</label>
@@ -589,6 +595,7 @@ function render() {
     </div>
   </div>`;
   if (ui.page !== 'classes') fakePlayerSync();
+  const cl = document.querySelector('.chat-list'); if (cl) cl.scrollTop = cl.scrollHeight;
 }
 function fakePlayerSync() { if (ui.timer) { clearInterval(ui.timer); ui.timer = null; } }
 
@@ -888,6 +895,7 @@ function stuModal(id) {
   modal(`<div class="row" style="margin-bottom:16px"><div class="avatar" style="width:48px;height:48px;font-size:16px">${ini(s.n)}</div><div class="grow"><h2>${esc(s.n)} ${pm(s.p)}</h2><div class="muted sm">${PERM(s.p).d} · ${esc(s.mail)} · ${esc(s.tel)} · alta ${fmtData(s.alta)}</div></div>${r.ok ? '<span class="pill ok">Llest per a l\'examen</span>' : ''}</div>
   ${nextExam(id) ? `<div class="notice">${ic('flag')}<div>${EX_L[nextExam(id).t]} convocat: <b>${fmtData(nextExam(id).d)} · ${nextExam(id).h}</b> · ${esc(nextExam(id).pl)}</div></div>` : ''}
   <div class="grid g3" style="margin-bottom:16px"><div class="card kpi" style="padding:12px"><div class="l">Temari</div><div class="v" style="font-size:22px">${skillsOk(id)}/${n}</div></div><div class="card kpi" style="padding:12px"><div class="l">Pràctiques fetes</div><div class="v" style="font-size:22px">${doneN(id)}</div></div><div class="card kpi" style="padding:12px"><div class="l">Nota mitjana</div><div class="v" style="font-size:22px">${scoreAvg(id) ? scoreAvg(id).toFixed(1) : '—'}</div></div></div>
+  ${stuExtra(id)}
   <div class="row between" style="margin-bottom:6px"><h3>Temari de pràctiques</h3><span class="sm muted">Al bo: ${s.bo}</span></div>${skillsBlock(id, true)}
   ${isAdmin() ? `<h3 style="margin:12px 0 6px">Tràmits</h3><div class="row wrap" style="margin-bottom:12px">${tramitsFor(id).map(x => `<span class="sm">${x.l.replace(/ \(.*\)/, '')}: ${trPill(x.k, trv(id, x.k))}</span>`).join('')}</div>` : ''}
   <h3 style="margin:12px 0 8px">Diari de classes</h3>${ls.length ? ls.slice(0, 6).map(l => `<div class="card" style="margin-bottom:8px;padding:14px">${lessonFeedback(l, false)}</div>`).join('') : '<div class="sm muted">Encara no hi ha classes registrades.</div>'}
@@ -935,7 +943,7 @@ function vProfs() {
   <div class="grid g2">${S.instr.map(i => {
     const wk = weekDays(), s0 = iso(wk[0]), s1 = iso(wk[5]), cl = realLessons().filter(l => l.i === i.id && l.d >= s0 && l.d <= s1 && l.st !== 'absent').length;
     const sc = realLessons().filter(l => l.i === i.id && l.st === 'feta' && l.score), rt = avgRate(i.id);
-    return `<div class="card"><div class="row" style="margin-bottom:12px"><div class="avatar" style="width:44px;height:44px">${ini(i.n)}</div><div class="grow"><h2>${esc(i.n)}</h2><div class="sm muted">${(i.hrs.length === HORES.length ? 'Tot el dia' : i.hrs[0] < 14 && i.hrs.every(h => h < 14) ? 'Matins' : i.hrs.every(h => h >= 16) ? 'Tardes' : 'Horari partit')} · ${i.dies.map(d => DIES[d]).join(' ')}</div></div><button class="btn sm" data-act="editprof" data-id="${i.id}">Editar</button></div>
+    return `<div class="card"><div class="row" style="margin-bottom:12px"><div class="avatar" style="width:44px;height:44px">${ini(i.n)}</div><div class="grow"><h2>${esc(i.n)}</h2><div class="sm muted">${(i.hrs.length === HORES.length ? 'Tot el dia' : i.hrs[0] < 14 && i.hrs.every(h => h < 14) ? 'Matins' : i.hrs.every(h => h >= 16) ? 'Tardes' : 'Horari partit')} · ${i.dies.map(d => DIES[d]).join(' ')}</div></div><div class="row" style="gap:6px"><button class="btn sm" data-act="pcard" data-id="${i.id}">Fitxa</button><button class="btn sm" data-act="editprof" data-id="${i.id}">Editar</button></div></div>
     <div class="list">${i.perms.map(p => `<div class="item" style="padding:8px 0">${pm(p)}<div class="grow">${esc(i.veh[p] || '—')}</div><span class="sm muted">${S.stu.filter(s => s.p === p && myStudents(i.id).includes(s)).length} alumnes</span></div>`).join('')}</div>
     <div class="row wrap" style="margin-top:12px;gap:22px"><div><div class="muted sm">Classes aquesta setmana</div><b style="font-size:20px;font-family:var(--head)">${cl}</b></div><div><div class="muted sm">Nota que posa</div><b style="font-size:20px;font-family:var(--head)">${sc.length ? (sc.reduce((a, l) => a + l.score, 0) / sc.length).toFixed(1) : '—'}</b></div><div><div class="muted sm">Valoració</div>${rt ? stars(Math.round(rt)) : '<span class="muted">—</span>'}</div><div class="grow" style="text-align:right"><button class="btn sm" data-act="viewag" data-id="${i.id}">Veure agenda</button></div></div></div>`;
   }).join('')}</div>`;
@@ -1102,6 +1110,10 @@ function exportCsv(name, rows) {
   download(name, 'text/csv;charset=utf-8', '﻿' + rows.map(r => r.map(q).join(';')).join('\r\n'));
 }
 function csvFor(kind) {
+  if (kind === 'emb') return embCsv();
+  if (kind === 'cls') return clsCsv();
+  if (kind === 'abs') return absCsv();
+  if (kind === 'pre') return preCsv();
   if (kind === 'liq') return liqCsv();
   if (kind === 'veh') return vehCsv();
   if (kind === 'stu') return [['Nom', 'Carnet', 'Telèfon', 'Correu', 'Alta', 'Pràctiques fetes', 'Al bo', 'Nota mitjana', 'Llest per a examen'], ...S.stu.map(s => [s.n, PERM(s.p).n, s.tel, s.mail, s.alta, doneN(s.id), s.bo, scoreAvg(s.id) ? scoreAvg(s.id).toFixed(1).replace('.', ',') : '', readiness(s.id).ok ? 'Sí' : 'No'])];
@@ -1165,6 +1177,12 @@ function tasksToday() {
   if (ina.length) out.push({ n: ina.length, t: `${ina.length} ${pl(ina.length, 'alumne', 'alumnes')} sense classes des de fa més de 3 setmanes`, x: ina.slice(0, 3).map(s => s.n).join(' · ') + (ina.length > 3 ? '…' : ''), go: 'alumnes', b: 'Veure' });
   const ca = carAlerts();
   if (ca.length) out.push({ n: ca.length, t: `${ca.length} ${pl(ca.length, 'caducitat', 'caducitats')} de vehicles`, x: ca.slice(0, 2).map(a => `${a.c.n}: ${a.l}`).join(' · '), go: 'vehicles', b: 'Revisar' });
+  const ap = absPending();
+  if (ap.length) out.push({ n: ap.length, t: `${ap.length} ${pl(ap.length, 'avís d\'absència', 'avisos d\'absència')} per decidir`, x: ap.slice(0, 3).map(l => stu(l.s).n).join(' · '), go: 'absencies', b: 'Decidir' });
+  const pn = S.pre.filter(x => x.st === 'nova');
+  if (pn.length) out.push({ n: pn.length, t: `${pn.length} ${pl(pn.length, 'preinscripció nova', 'preinscripcions noves')}`, x: pn.slice(0, 3).map(x => x.n).join(' · '), go: 'preinscripcions', b: 'Veure' });
+  const un = unreadAll();
+  if (un) out.push({ n: un, t: `${un} ${pl(un, 'missatge sense llegir', 'missatges sense llegir')} a l'assistència`, x: 'Converses amb alumnes i professors', go: 'assistencia', b: 'Respondre' });
   return out;
 }
 function tasksCard() {
@@ -1341,12 +1359,287 @@ function impPreview() {
   ${r.errs.length ? `<div class="notice warn">${ic('info')}<div><b>${r.errs.length} ${r.errs.length === 1 ? 'fila no s\'importarà' : 'files no s\'importaran'}:</b> ${r.errs.slice(0, 4).map(e => `fila ${e.line}, ${esc(e.t)}`).join('; ')}${r.errs.length > 4 ? '…' : ''}</div></div>` : ''}`;
 }
 
+// ---------- DADES NOVES: xat, preinscripcions, avisos ----------
+const tfmt = ts => { const d = new Date(ts); return `${p2(d.getDate())}/${p2(d.getMonth() + 1)} ${p2(d.getHours())}:${p2(d.getMinutes())}`; };
+function seedChat() {
+  const t = Date.now(), h = 36e5;
+  return [
+    { id: 1, th: 'P1', from: 'u', n: 'Laia Roca', t: 'Bon dia, puc canviar la pràctica de dimarts a dimecres?', ts: t - 26 * h },
+    { id: 2, th: 'P1', from: 'a', n: 'Anna Bosch', t: 'Bon dia, Laia. Dimecres a les 10:00 hi ha hora lliure amb el mateix professor. Te la reservem?', ts: t - 25 * h },
+    { id: 3, th: 'P1', from: 'u', n: 'Laia Roca', t: 'Sí, si us plau.', ts: t - 24 * h },
+    { id: 4, th: 'P1', from: 'a', n: 'Anna Bosch', t: 'Fet. Ja la tens a l\'agenda.', ts: t - 23 * h },
+    { id: 5, th: 'i1', from: 'u', n: 'Jordi Puig', t: 'Dilluns que ve no podré fer la tarda per una revisió del cotxe. Podeu reassignar les classes?', ts: t - 5 * h },
+    { id: 6, th: 'P3', from: 'u', n: 'Núria Camps', t: 'Hola, no trobo on pagar la quota que em queda del carnet.', ts: t - 2 * h },
+  ];
+}
+function seedPre() {
+  const t = Date.now(), h = 36e5;
+  return [
+    { id: 'pr1', n: 'Eva Martí', tel: '644 120 331', mail: 'eva.marti@exemple.cat', p: 'B', fr: 'Tardes', nota: 'Vull començar després de les festes.', ts: t - 30 * h, st: 'nova' },
+    { id: 'pr2', n: 'Biel Sanz', tel: '688 442 015', mail: 'biel.sanz@exemple.cat', p: 'A2', fr: 'Matins', nota: '', ts: t - 9 * h, st: 'nova' },
+    { id: 'pr3', n: 'Lluïsa Ferrer', tel: '655 908 713', mail: 'lluisa.ferrer@exemple.cat', p: 'C1', fr: 'Indiferent', nota: 'Necessito el carnet per feina.', ts: t - 70 * h, st: 'contactada' },
+  ];
+}
+function migrate4() {
+  S.chat = S.chat || seedChat(); S.cseen = S.cseen || {}; S.pre = S.pre || seedPre();
+  S.instr.forEach((i, k) => { i.tel = i.tel || `6${k + 1}2 ${340 + k * 7} ${110 + k * 13}`; i.mail = i.mail || i.n.toLowerCase().normalize('NFD').replace(/[^a-z ]/g, '').replace(' ', '.') + '@autoescola.exemple.cat'; });
+  if (!S.naSeed) {
+    S.naSeed = 1; const t = Date.now(), h = 36e5, mk = (s, i, off, hr, na) => S.les.push({ id: nid(), s, i, d: iso(addDays(today0(), off)), h: hr, st: 'cancel·lada', pt: 'Davant l\'autoescola', na });
+    mk('s5', 'i3', -2, 12, { r: 'Feina o estudis', note: 'Reunió d\'última hora.', ts: t - 50 * h, hrs: 3, pct: 100, st: 'pendent' });
+    mk('s3', 'i1', 1, 17, { r: 'Malaltia', note: '', ts: t - 6 * h, hrs: 30, pct: 25, st: 'pendent' });
+    mk('s4', 'i2', -9, 10, { r: 'Problema de transport', note: '', ts: t - 230 * h, hrs: 20, pct: 25, st: 'aplicada', amt: 10 });
+  }
+}
+
+// ---------- FASES I EMBUTS ----------
+const STAGES = [['teoric', 'Teòric'], ['circuit', 'Circuit'], ['practic', 'Pràctiques'], ['examen', 'Examen pràctic'], ['aprovat', 'Aprovat']];
+const stageLabel = k => (STAGES.find(x => x[0] === k) || [])[1] || k;
+const examOk = (sid, t) => S.exams.some(e => e.s === sid && e.t === t && e.res === 'aprovat') || trv(sid, t) === 'ok';
+const daysSince = d => -daysTo(d);
+function stageOf(s) {
+  if (examOk(s.id, 'practic')) return 'aprovat';
+  const lt = S.exams.filter(e => e.s === s.id && e.t === 'teoric').sort((p, q) => q.d.localeCompare(p.d))[0], tOk = lt ? lt.res === 'aprovat' : (trv(s.id, 'teoric') === 'ok' || doneN(s.id) > 0);
+  if (!tOk) return 'teoric';
+  if (pOf(s.id).ex.includes('circuit') && !examOk(s.id, 'circuit')) return 'circuit';
+  if (S.exams.some(e => e.s === s.id && e.t === 'practic' && e.res === 'convocat')) return 'examen';
+  return 'practic';
+}
+const docsPending = sid => tramitsFor(sid).filter(x => !['teoric', 'practic', 'circuit', 'taxa'].includes(x.k) && trv(sid, x.k) !== 'ok').length;
+function embRows(p, k) {
+  return S.stu.map(s => ({ s, st: stageOf(s) })).filter(x => (!p || p === 'all' || x.s.p === p) && (!k || k === 'all' || x.st === k));
+}
+function embCsv() {
+  const sel = ui.embSel || { p: 'all', k: 'all' };
+  return [['Alumne', 'Carnet', 'Fase', 'Dies des de l\'alta', 'Pràctiques fetes', 'Nota mitjana', 'Documents pendents', 'Propera classe', 'Telèfon', 'Correu'],
+    ...embRows(sel.p, sel.k).map(({ s, st }) => { const nx = upcoming(s.id)[0], av = scoreAvg(s.id); return [s.n, PERM(s.p).n, stageLabel(st), daysSince(s.alta), doneN(s.id), av ? av.toFixed(1).replace('.', ',') : '', docsPending(s.id), nx ? `${nx.d} ${p2(nx.h)}:00` : '', s.tel, s.mail]; })];
+}
+function examStats() {
+  return PERMITS.map(p => {
+    const ex = S.exams.filter(e => stu(e.s) && stu(e.s).p === p.k), f = t => { const a = ex.filter(e => e.t === t), ap = a.filter(e => e.res === 'aprovat').length, su = a.filter(e => e.res === 'suspes').length; return { ap, pres: ap + su }; };
+    return { p, t: f('teoric'), c: f('circuit'), pr: f('practic'), abs: ex.filter(e => e.res === 'absent').length, n: ex.length };
+  }).filter(x => x.n);
+}
+const pctTxt = o => o.pres ? `${o.ap}/${o.pres} · ${Math.round(o.ap / o.pres * 100)} %` : '<span class="muted">—</span>';
+function vEmbuts() {
+  const f = ui.embP || 'all', rows = embRows(f), active = rows.filter(x => x.st !== 'aprovat');
+  const showC = rows.some(x => pOf(x.s.id).ex.includes('circuit'));
+  const stg = STAGES.filter(([k]) => k !== 'aprovat' && (k !== 'circuit' || showC)).map(([k, l]) => {
+    const g = rows.filter(x => x.st === k);
+    return { k, l, n: g.length, avg: g.length ? Math.round(g.reduce((a, x) => a + daysSince(x.s.alta), 0) / g.length) : 0 };
+  });
+  const mx = Math.max(1, ...stg.map(x => x.n)), top = stg.slice().sort((a, b) => b.n - a.n)[0], slow = stg.filter(x => x.n).sort((a, b) => b.avg - a.avg)[0];
+  const done = rows.filter(x => x.st === 'aprovat'), approvedDays = done.map(x => { const e = S.exams.filter(y => y.s === x.s.id && y.t === 'practic' && y.res === 'aprovat').sort((a, b) => a.d.localeCompare(b.d))[0]; return e ? Math.round((new Date(e.d) - new Date(x.s.alta)) / 864e5) : null; }).filter(v => v != null);
+  const avgDays = approvedDays.length ? Math.round(approvedDays.reduce((a, v) => a + v, 0) / approvedDays.length) : null;
+  const pr = S.exams.filter(e => e.t === 'practic' && (f === 'all' || stu(e.s)?.p === f) && (e.res === 'aprovat' || e.res === 'suspes'));
+  const first = pr.filter(e => attemptNo(e) === 1), firstOk = first.filter(e => e.res === 'aprovat').length;
+  const used = PERMITS.filter(p => S.stu.some(s => s.p === p.k));
+  const cellMx = Math.max(1, ...used.flatMap(p => stg.map(x => embRows(p.k, x.k).length)));
+  const insight = top && top.n >= 2 ? `La fase amb més alumnes és <b>${top.l}</b>: ${top.n} de ${active.length} alumnes actius (${Math.round(top.n / Math.max(1, active.length) * 100)} %).${slow && slow.k !== top.k ? ` La que porta més temps és <b>${slow.l}</b>, amb ${slow.avg} dies de mitjana des de l'alta.` : slow ? ` També és on porten més temps: ${slow.avg} dies de mitjana des de l'alta.` : ''}` : 'Encara no hi ha prou alumnes per detectar embuts.';
+  return `${head('Fases i embuts', 'On és cada alumne del procés i en quina fase s\'acumula més gent.', `<div class="row"><button class="btn" data-act="csv" data-k="emb">${ic('down')} Descarregar alumnes per fase</button></div>`)}
+  <div class="chips"><button class="chip ${f === 'all' ? 'on' : ''}" data-act="embp" data-k="all">Tots els carnets <b>${S.stu.length}</b></button>${used.map(p => `<button class="chip ${f === p.k ? 'on' : ''}" data-act="embp" data-k="${p.k}">${p.n} <b>${S.stu.filter(s => s.p === p.k).length}</b></button>`).join('')}</div>
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="card kpi"><div class="l">Alumnes actius</div><div class="v">${active.length}</div><div class="s">${done.length} ja aprovats</div></div>
+    <div class="card kpi"><div class="l">Fase amb més gent</div><div class="v" style="font-size:22px;padding-top:8px">${top && top.n ? top.l : '—'}</div><div class="s">${top && top.n ? top.n + ' alumnes' : ''}</div></div>
+    <div class="card kpi"><div class="l">Dies fins a aprovar</div><div class="v">${avgDays != null ? avgDays : '—'}</div><div class="s">mitjana des de l'alta</div></div>
+    <div class="card kpi"><div class="l">Aprovats a la primera (pràctic)</div><div class="v">${first.length ? Math.round(firstOk / first.length * 100) + ' %' : '—'}</div><div class="s">${firstOk} de ${first.length} primers intents</div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px"><div class="card-h"><h2>Alumnes per fase</h2><span class="muted sm">Fes clic en una fase per veure'n els alumnes</span></div>
+    <div class="notice">${ic('info')}<div>${insight}</div></div>
+    <div class="funnel">${stg.map(x => `<button class="fn ${top && top.k === x.k && x.n >= 2 ? 'hot' : ''}" data-act="emb-cell" data-p="${f}" data-k="${x.k}"><span class="fn-l">${x.l}</span><span class="fn-b"><i style="width:${x.n / mx * 100}%"></i></span><span class="fn-n">${x.n}</span><span class="fn-d">${x.n ? x.avg + ' d de mitjana' : '—'}</span>${top && top.k === x.k && x.n >= 2 ? '<span class="pill warn">Coll d\'ampolla</span>' : '<span></span>'}</button>`).join('')}
+    <div class="fn end"><span class="fn-l">Aprovats</span><span class="fn-b"><i style="width:${done.length / Math.max(1, mx) * 100}%;background:var(--ok)"></i></span><span class="fn-n">${done.length}</span><span class="fn-d"></span><span></span></div></div></div>
+  <div class="card flush scroll-x" style="margin-bottom:16px"><div style="padding:16px 18px 0"><h2>Carnet i fase</h2><p class="muted sm" style="margin-top:2px">Cada casella mostra quants alumnes hi ha. Com més fosca, més acumulació.</p></div>
+  <table style="margin-top:12px"><thead><tr><th>Carnet</th>${stg.map(x => `<th class="right">${x.l}</th>`).join('')}<th class="right">Actius</th><th class="right">Aprovats</th></tr></thead><tbody>
+  ${used.filter(p => f === 'all' || f === p.k).map(p => { const act = embRows(p.k).filter(x => x.st !== 'aprovat').length; return `<tr><td>${pm(p.k)} <span class="sm muted">${p.d}</span></td>${stg.map(x => { const n = embRows(p.k, x.k).length, na = x.k === 'circuit' && !p.ex.includes('circuit'); return `<td class="right">${na ? '<span class="muted">—</span>' : n ? `<button class="mcell" style="--a:${(n / cellMx).toFixed(2)}" data-act="emb-cell" data-p="${p.k}" data-k="${x.k}">${n}</button>` : '<span class="muted">0</span>'}</td>`; }).join('')}<td class="right"><b>${act}</b></td><td class="right">${embRows(p.k, 'aprovat').length}</td></tr>`; }).join('')}</tbody></table></div>
+  <div class="card flush scroll-x" style="margin-bottom:16px"><div style="padding:16px 18px 0"><h2>Resultats d'exàmens per carnet</h2><p class="muted sm" style="margin-top:2px">Aprovats sobre presentats.</p></div>
+  <table style="margin-top:12px"><thead><tr><th>Carnet</th><th>Teòric</th><th>Circuit</th><th>Pràctic</th><th class="right">No presentats</th></tr></thead><tbody>${examStats().map(r => `<tr><td>${pm(r.p.k)}</td><td>${pctTxt(r.t)}</td><td>${r.p.ex.includes('circuit') ? pctTxt(r.c) : '<span class="muted">—</span>'}</td><td>${pctTxt(r.pr)}</td><td class="right">${r.abs || '<span class="muted">0</span>'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">Encara no hi ha exàmens.</td></tr>'}</tbody></table></div>
+  ${reportsCard()}`;
+}
+function embModal(p, k) {
+  const rows = embRows(p, k).sort((a, b) => daysSince(b.s.alta) - daysSince(a.s.alta));
+  ui.embSel = { p: p || 'all', k };
+  modal(`<h2>${stageLabel(k)}${p && p !== 'all' ? ' · carnet ' + PERM(p).n : ''}</h2><p class="muted" style="margin-bottom:12px">${rows.length} ${rows.length === 1 ? 'alumne' : 'alumnes'} en aquesta fase, de més a menys temps des de l'alta.</p>
+  ${rows.length ? `<div class="card flush scroll-x"><table><thead><tr><th>Alumne</th><th>Carnet</th><th class="right">Dies</th><th class="right">Pràctiques</th><th>Documents</th><th></th></tr></thead><tbody>${rows.map(({ s }) => `<tr><td><b>${esc(s.n)}</b><div class="sm muted">${esc(s.tel)}</div></td><td>${pm(s.p)}</td><td class="right">${daysSince(s.alta)}</td><td class="right">${doneN(s.id)}</td><td>${docsPending(s.id) ? `<span class="pill warn">${docsPending(s.id)} pendents</span>` : '<span class="pill ok">Complets</span>'}</td><td class="right"><button class="btn sm" data-act="stu" data-id="${s.id}">Fitxa</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Cap alumne en aquesta fase.</div>'}
+  <div class="acts"><button class="btn" data-act="csv" data-k="emb" data-keep="1">${ic('down')} Descarregar CSV</button><button class="btn pri" data-act="close">Tancar</button></div>`, true);
+}
+const REPORTS = [
+  ['emb', 'Alumnes per fase', 'Fase actual, dies des de l\'alta i documents pendents de cada alumne'],
+  ['stu', 'Alumnes', 'Totes les matrícules amb pràctiques, nota i estat'],
+  ['cls', 'Classes', 'Totes les pràctiques amb data, professor, estat i nota'],
+  ['pay', 'Pagaments', 'Cobraments, pendents i imports'],
+  ['ex', 'Exàmens', 'Convocatòries i resultats, amb el número d\'intent'],
+  ['abs', 'Avisos d\'absència', 'Classes que els alumnes no han pogut fer i la decisió presa'],
+  ['liq', 'Liquidació de professors', 'Hores i import a liquidar del mes seleccionat'],
+  ['veh', 'Vehicles', 'ITV, assegurança, revisions i quilòmetres'],
+  ['pre', 'Preinscripcions', 'Sol·licituds rebudes des del formulari en línia'],
+];
+function reportsCard() {
+  return `<div class="card"><div class="card-h"><h2>Informes i dades</h2><button class="btn sm" data-act="backup">${ic('down')} Còpia completa (JSON)</button></div><div class="list">${REPORTS.map(r => `<div class="item"><div class="grow"><b>${r[1]}</b><div class="sm muted">${r[2]}</div></div><button class="btn sm" data-act="csv" data-k="${r[0]}">${ic('down')} CSV</button></div>`).join('')}</div></div>`;
+}
+function clsCsv() {
+  return [['Data', 'Hora', 'Alumne', 'Carnet', 'Professor', 'Estat', 'Nota', 'Punt de trobada'], ...S.les.filter(l => l.s).sort((a, b) => (a.d + p2(a.h)).localeCompare(b.d + p2(b.h))).map(l => [l.d, `${p2(l.h)}:00`, stu(l.s)?.n || '', PERM(stu(l.s)?.p).n, ins(l.i)?.n || '', l.st, l.score || '', l.pt || ''])];
+}
+function absCsv() {
+  return [['Data de la classe', 'Alumne', 'Carnet', 'Professor', 'Hores d\'antelació', 'Motiu', 'Penalització suggerida (%)', 'Decisió', 'Import (€)'], ...absList().map(l => [l.d, stu(l.s).n, PERM(stu(l.s).p).n, ins(l.i).n, Math.round(l.na.hrs), l.na.r, l.na.pct, l.na.st, l.na.st === 'aplicada' ? (l.na.amt || 0).toFixed(2).replace('.', ',') : ''])];
+}
+function preCsv() {
+  syncPre();
+  return [['Data', 'Nom', 'Telèfon', 'Correu', 'Carnet', 'Franja', 'Comentari', 'Estat'], ...S.pre.map(x => [new Date(x.ts).toISOString().slice(0, 10), x.n, x.tel, x.mail, PERM(x.p).n, x.fr, x.nota, x.st])];
+}
+
+// ---------- ASSISTÈNCIA (xat intern) ----------
+const thKey = () => isProf() ? S.meI : stu(S.me).pid;
+const thName = k => { const i = ins(k); if (i) return i.n; const s = S.stu.find(x => x.pid === k); return s ? s.n : k; };
+const thRole = k => ins(k) ? 'Professor' : 'Alumne';
+const chatOf = th => S.chat.filter(m => m.th === th).sort((a, b) => a.ts - b.ts);
+const seenKey = th => (isAdmin() ? 'a:' : 'u:') + th;
+function unread(th) { const side = isAdmin() ? 'u' : 'a', seen = S.cseen[seenKey(th)] || 0; return S.chat.filter(m => m.th === th && m.from === side && m.ts > seen).length; }
+function unreadAll() { return isAdmin() ? [...new Set(S.chat.map(m => m.th))].reduce((a, t) => a + unread(t), 0) : unread(thKey()); }
+function threadsList() {
+  return [...new Set(S.chat.map(m => m.th))].map(th => { const ms = chatOf(th); return { th, last: ms[ms.length - 1] }; }).sort((a, b) => b.last.ts - a.last.ts);
+}
+function chatBox(th) {
+  const ms = chatOf(th), me = isAdmin() ? 'a' : 'u';
+  return `<div class="chat-list" role="log" aria-live="polite">${ms.length ? ms.map(m => `<div class="bub ${m.from === me ? 'me' : 'ot'}"><div class="bub-m">${esc(m.n)} · ${tfmt(m.ts)}</div><div class="bub-t">${esc(m.t)}</div></div>`).join('') : '<div class="empty">Encara no hi ha missatges. Escriu el primer.</div>'}</div>
+  ${isAdmin() ? '' : `<div class="chips" style="margin:10px 0 0">${['Voldria canviar una classe', 'Tinc una pregunta sobre un pagament', 'Em falta un document', 'Consulta sobre l\'examen'].map(t => `<button class="chip" data-act="chat-q" data-t="${esc(t)}">${t}</button>`).join('')}</div>`}
+  <div class="chat-in"><textarea id="chat-in" rows="2" placeholder="Escriu un missatge" aria-label="Missatge"></textarea><button class="btn pri" data-act="chat-send">Enviar</button></div>`;
+}
+function vAssist() {
+  if (!isAdmin()) {
+    const th = thKey(); S.cseen[seenKey(th)] = Date.now(); save();
+    return `${head('Assistència', `Xat directe amb ${esc(S.brand.name)}. Et responem durant l'horari d'oficina.`)}<div class="card chat-card">${chatBox(th)}</div>`;
+  }
+  const ts = threadsList(); if (!ui.th || !ts.some(x => x.th === ui.th)) ui.th = ts[0]?.th;
+  if (ui.th) { S.cseen[seenKey(ui.th)] = Date.now(); save(); }
+  return `${head('Assistència', 'Converses internes amb alumnes i professors.')}
+  <div class="chat-grid"><div class="card flush chat-th">${ts.length ? ts.map(x => `<button class="th ${x.th === ui.th ? 'on' : ''}" data-act="chat-th" data-id="${x.th}"><div class="avatar">${ini(thName(x.th))}</div><div class="grow"><b>${esc(thName(x.th))}</b> <span class="sm muted">${thRole(x.th)}</span><div class="sm muted th-l">${esc(x.last.t)}</div></div>${unread(x.th) ? `<i class="badge">${unread(x.th)}</i>` : ''}</button>`).join('') : '<div class="empty">Cap conversa.</div>'}</div>
+  <div class="card chat-card">${ui.th ? `<div class="card-h"><h2>${esc(thName(ui.th))}</h2><span class="pill mute">${thRole(ui.th)}</span></div>${chatBox(ui.th)}` : '<div class="empty">Selecciona una conversa.</div>'}</div></div>`;
+}
+
+// ---------- AVISOS D'ABSÈNCIA I PENALITZACIONS ----------
+const ABS_R = ['Malaltia', 'Feina o estudis', 'Problema de transport', 'Motiu personal', 'Altres'];
+const absList = () => S.les.filter(l => l.na).sort((a, b) => b.na.ts - a.na.ts);
+const absPending = () => absList().filter(l => l.na.st === 'pendent');
+function absState(l) {
+  const n = l.na;
+  return n.st === 'pendent' ? '<span class="pill warn">Pendent de decidir</span>' : n.st === 'perdonada' ? '<span class="pill mute">Sense penalització</span>' : `<span class="pill bad">${n.pct >= 100 ? 'Classe perduda' : 'Penalitzat ' + eur(n.amt || 0)}</span>`;
+}
+function vAbs() {
+  const f = ui.absF || 'pendent', all = absList(), list = all.filter(l => f === 'tots' || l.na.st === f);
+  return `${head('Avisos d\'absència', 'Classes que els alumnes han avisat que no poden fer. Tu decideixes si hi ha penalització.', `<button class="btn" data-act="csv" data-k="abs">${ic('down')} Exportar CSV</button>`)}
+  <div class="chips">${[['pendent', 'Pendents'], ['aplicada', 'Penalitzats'], ['perdonada', 'Sense penalització'], ['tots', 'Tots']].map(([k, l]) => `<button class="chip ${f === k ? 'on' : ''}" data-act="absf" data-k="${k}">${l} <b>${k === 'tots' ? all.length : all.filter(x => x.na.st === k).length}</b></button>`).join('')}</div>
+  <div class="card flush scroll-x"><table><thead><tr><th>Alumne</th><th>Classe</th><th>Avís</th><th>Motiu</th><th>Segons la política</th><th>Decisió</th><th></th></tr></thead><tbody>
+  ${list.map(l => { const s = stu(l.s), n = l.na, price = PERM(s.p).h, fee = price * n.pct / 100; return `<tr><td><b>${esc(s.n)}</b> ${pm(s.p)}</td><td>${fmtData(l.d)} · ${p2(l.h)}:00<div class="sm muted">${esc(ins(l.i).n)}</div></td><td>${n.hrs < 1 ? 'Menys d\'1 h' : Math.round(n.hrs) + ' h'} abans<div class="sm muted">${tfmt(n.ts)}</div></td><td>${esc(n.r)}${n.note ? `<div class="sm muted">${esc(n.note)}</div>` : ''}</td><td>${n.pct === 0 ? 'Sense cost' : n.pct >= 100 ? 'Es perd la classe' : `${n.pct} % · ${eur(fee)}`}</td><td>${absState(l)}</td><td class="right" style="white-space:nowrap">${n.st === 'pendent' ? `<button class="btn sm pri" data-act="abs-apply" data-id="${l.id}" data-pct="${n.pct}">${n.pct === 0 ? 'Confirmar sense cost' : 'Aplicar ' + (n.pct >= 100 ? 'pèrdua' : n.pct + ' %')}</button> <button class="btn sm" data-act="abs-custom" data-id="${l.id}">Altre %</button> <button class="btn sm" data-act="abs-forgive" data-id="${l.id}">Perdonar</button>` : ''}</td></tr>`; }).join('') || '<tr><td colspan="7" class="empty">No hi ha avisos en aquest estat.</td></tr>'}</tbody></table></div>
+  <p class="muted sm" style="margin-top:12px">Quan l'alumne avisa, l'hora queda lliure i la pràctica torna al seu bo. Si apliques una penalització s'afegeix un cobrament pendent; si es perd la classe, es descompta del bo.</p>`;
+}
+function absApply(l, pct) {
+  const s = stu(l.s), price = PERM(s.p).h;
+  l.na.pct = pct; l.na.st = 'aplicada'; l.na.amt = 0;
+  if (pct >= 100) { s.bo = Math.max(0, s.bo - 1); say(s.id, `S'ha aplicat la pèrdua de la pràctica del ${fmtData(l.d)} a les ${p2(l.h)}:00 per avís tardà.`, 'admin', 'Anna Bosch'); }
+  else if (pct > 0) { l.na.amt = +(price * pct / 100).toFixed(2); S.pay.push({ id: nid(), s: s.id, c: `Penalització per absència · ${fmtData(l.d)} ${p2(l.h)}:00`, a: l.na.amt, d: iso(today0()), st: 'pendent' }); say(s.id, `S'ha aplicat una penalització de ${eur(l.na.amt)} per la pràctica del ${fmtData(l.d)}.`, 'admin', 'Anna Bosch'); }
+  else l.na.st = 'perdonada';
+}
+
+// ---------- PREUS I PACKS (alumne) ----------
+function vTarifes() {
+  const me = stu(S.me), P = PERM(me.p), bos = S.packs.filter(k => k.t === 'bo' && k.p === me.p && k.on), carnet = S.packs.find(k => k.t === 'carnet' && k.p === me.p && k.on);
+  const ref = carnet ? carnet.ref - P.hrs * P.h : 0;
+  return `${head('Preus i packs', `Tarifes del carnet ${P.n} i pràctiques addicionals.`)}
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card kpi"><div class="l">Preu d'una pràctica</div><div class="v">${eur(P.h)}</div><div class="s">1 hora · carnet ${P.n}</div></div>
+    <div class="card kpi"><div class="l">Al teu bo</div><div class="v">${me.bo}</div><div class="s">${me.bo === 1 ? 'pràctica disponible' : 'pràctiques disponibles'}</div></div>
+    <div class="card kpi"><div class="l">Taxa d'examen DGT</div><div class="v">94,05 €</div><div class="s">cada convocatòria</div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px"><div class="card-h"><h2>Pràctiques addicionals</h2><span class="muted sm">Com més gran és el pack, més econòmica és cada hora</span></div>
+  <div class="grid g4">${bos.map(k => { const sv = k.n * P.h - k.pr; return `<div class="pack"><div class="pn">${k.n} <span>pràctiques</span></div><div class="pp">${eur(k.pr)}</div><div class="sm muted">${eur(k.pr / k.n)} / hora</div>${sv > 0 ? `<span class="pill ok" style="margin:8px 0">Estalvi de ${eur(sv)}</span>` : '<span style="display:block;height:34px"></span>'}<button class="btn pri" style="width:100%;justify-content:center" data-act="checkout" data-id="${k.id}">Comprar</button></div>`; }).join('') || '<div class="empty">Cap pack disponible.</div>'}</div>
+  <p class="muted sm" style="margin-top:12px">També pots comprar una pràctica solta al preu de ${eur(P.h)} des del calendari de reserves.</p></div>
+  ${carnet ? `<div class="card" style="margin-bottom:16px"><div class="card-h"><h2>Carnet complet ${P.n}</h2><span class="pill info">${carnet.n} pràctiques incloses</span></div><div class="row wrap between"><div><div class="muted sm">Matrícula i material ${eur(290)} · ${carnet.n} pràctiques · taxa DGT</div><div style="margin-top:4px"><span class="muted" style="text-decoration:line-through">${eur(carnet.ref)}</span> <b style="font-size:22px">${eur(carnet.pr)}</b></div></div><button class="btn pri" data-act="checkout" data-id="${carnet.id}">Pagar el carnet</button></div></div>` : ''}
+  <div class="card flush scroll-x" style="margin-bottom:16px"><div style="padding:16px 18px 0"><h2>Tarifes per carnet</h2></div><table style="margin-top:12px"><thead><tr><th>Carnet</th><th>Descripció</th><th class="right">Preu per hora</th><th class="right">Hores del carnet complet</th><th class="right">Carnet complet</th></tr></thead><tbody>
+  ${PERMITS.map(p => { const c = S.packs.find(k => k.t === 'carnet' && k.p === p.k && k.on); return `<tr style="${p.k === me.p ? 'background:var(--accent-soft)' : ''}"><td>${pm(p.k)}</td><td>${p.d}</td><td class="right">${eur(p.h)}</td><td class="right">${p.hrs} h</td><td class="right">${c ? eur(c.pr) : '<span class="muted">—</span>'}</td></tr>`; }).join('')}</tbody></table></div>
+  <div class="card"><div class="card-h"><h2>Avisos i cancel·lacions</h2></div><p class="muted" style="margin-bottom:10px">Si no pots assistir a una pràctica, marca-ho des de la reserva. L'autoescola decideix si aplica una penalització, d'acord amb aquesta política orientativa:</p>
+  <div class="list">${policyRows().map(r => `<div class="item"><div class="grow">${r.lab}</div><b>${r.cost}</b></div>`).join('')}</div></div>`;
+}
+
+// ---------- PREINSCRIPCIONS ----------
+function syncPre() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('vial-preinscripcions') || '[]');
+    if (raw.length) { raw.forEach(x => { if (!S.pre.some(y => y.id === x.id)) S.pre.unshift(x); }); localStorage.removeItem('vial-preinscripcions'); save(); }
+  } catch { }
+}
+const preStatePill = st => ({ nova: '<span class="pill info">Nova</span>', contactada: '<span class="pill warn">Contactada</span>', matriculada: '<span class="pill ok">Matriculada</span>', descartada: '<span class="pill mute">Descartada</span>' }[st] || '');
+function vPre() {
+  syncPre();
+  const f = ui.preF || 'actives', all = S.pre.slice().sort((a, b) => b.ts - a.ts), list = all.filter(x => f === 'tots' || (f === 'actives' ? ['nova', 'contactada'].includes(x.st) : x.st === f));
+  return `${head('Preinscripcions', 'Persones que s\'han apuntat des del formulari en línia.', `<div class="row"><a class="btn" href="inscripcio.html" target="_blank" rel="noopener">Veure el formulari públic</a><button class="btn" data-act="csv" data-k="pre">${ic('down')} Exportar CSV</button></div>`)}
+  <div class="chips">${[['actives', 'Per gestionar'], ['matriculada', 'Matriculades'], ['descartada', 'Descartades'], ['tots', 'Totes']].map(([k, l]) => `<button class="chip ${f === k ? 'on' : ''}" data-act="pref" data-k="${k}">${l} <b>${k === 'tots' ? all.length : k === 'actives' ? all.filter(x => ['nova', 'contactada'].includes(x.st)).length : all.filter(x => x.st === k).length}</b></button>`).join('')}</div>
+  <div class="card flush scroll-x"><table><thead><tr><th>Data</th><th>Persona</th><th>Carnet</th><th>Franja</th><th>Comentari</th><th>Estat</th><th></th></tr></thead><tbody>
+  ${list.map(x => `<tr><td>${tfmt(x.ts)}</td><td><b>${esc(x.n)}</b><div class="sm muted">${esc(x.tel)} · ${esc(x.mail)}</div></td><td>${pm(x.p)}</td><td>${esc(x.fr || '—')}</td><td class="sm">${esc(x.nota || '—')}</td><td>${preStatePill(x.st)}</td><td class="right" style="white-space:nowrap">${['nova', 'contactada'].includes(x.st) ? `${x.st === 'nova' ? `<button class="btn sm" data-act="pre-set" data-id="${x.id}" data-v="contactada">Contactada</button> ` : ''}<button class="btn sm pri" data-act="pre-set" data-id="${x.id}" data-v="matriculada">Matricular</button> <button class="btn sm" data-act="pre-set" data-id="${x.id}" data-v="descartada">Descartar</button>` : ''}</td></tr>`).join('') || '<tr><td colspan="7" class="empty">No hi ha preinscripcions en aquest estat.</td></tr>'}</tbody></table></div>`;
+}
+
+// ---------- DISPONIBILITAT ----------
+function vDisp() {
+  const days = weekDays(), f = ui.dispP || 'all', cands = S.instr.filter(i => f === 'all' || qualified(i, f));
+  const cells = HORES.map(h => `<div class="hr">${p2(h)}:00</div>` + days.map(d => {
+    const ds = iso(d), tot = cands.filter(i => works(i, ds, h)).length, free = cands.filter(i => works(i, ds, h) && !busy(i.id, ds, h));
+    if (isPast(ds, h) || !tot) return `<div><button class="slot past" disabled aria-label="No disponible"></button></div>`;
+    if (!free.length) return `<div><button class="slot blk" disabled>Complet<small>0 de ${tot}</small></button></div>`;
+    return `<div><button class="slot dfree" data-act="dsel" data-d="${ds}" data-h="${h}" style="--a:${(free.length / tot).toFixed(2)}"><b>${free.length} ${free.length === 1 ? 'lliure' : 'lliures'}</b><small>${free.map(i => esc(i.n.split(' ')[0])).join(', ')}</small></button></div>`;
+  }).join('')).join('');
+  const sum = S.instr.map(i => {
+    let work = 0, booked = 0, blocked = 0;
+    days.forEach(d => { const ds = iso(d); HORES.forEach(h => { if (!works(i, ds, h)) return; const l = S.les.find(x => x.i === i.id && x.d === ds && x.h === h && x.st !== 'cancel·lada'); if (l) { if (l.st === 'bloc') blocked++; else booked++; } else if (!isPast(ds, h)) work++; }); });
+    return { i, free: work, booked, blocked };
+  });
+  const used = PERMITS.filter(p => S.instr.some(i => qualified(i, p.k)));
+  return `${head('Disponibilitat', 'Hores lliures de cada professor. Fes clic en una hora per assignar-hi un alumne.')}
+  <div class="row between wrap" style="margin-bottom:12px">${calNav()}<div class="chips" style="margin:0"><button class="chip ${f === 'all' ? 'on' : ''}" data-act="dispp" data-k="all">Tots els carnets</button>${used.map(p => `<button class="chip ${f === p.k ? 'on' : ''}" data-act="dispp" data-k="${p.k}">${p.n}</button>`).join('')}</div></div>
+  <div class="scroll-x"><div class="cal">${calHead(days)}${cells}</div></div>
+  <div class="legend"><span><i style="background:var(--accent-soft)"></i>Professors lliures</span><span><i style="background:#e6e8ec"></i>Complet</span><span><i style="background:#f3f4f6"></i>Fora d'horari o passada</span></div>
+  <div class="card flush scroll-x" style="margin-top:16px"><div style="padding:16px 18px 0"><h2>Disponibilitat setmanal per professor</h2></div><table style="margin-top:12px"><thead><tr><th>Professor</th><th>Carnets</th><th>Dies i horari</th><th class="right">Hores lliures</th><th class="right">Reservades</th><th class="right">Bloquejades</th><th></th></tr></thead><tbody>
+  ${sum.map(r => `<tr><td><b>${esc(r.i.n)}</b></td><td class="sm">${permsTxt(r.i)}</td><td class="sm">${r.i.dies.map(d => DIES[d]).join(' ')} · ${p2(Math.min(...r.i.hrs))}:00–${p2(Math.max(...r.i.hrs) + 1)}:00</td><td class="right"><b>${r.free}</b></td><td class="right">${r.booked}</td><td class="right">${r.blocked || '<span class="muted">0</span>'}</td><td class="right" style="white-space:nowrap"><button class="btn sm" data-act="pcard" data-id="${r.i.id}">Fitxa</button> <button class="btn sm" data-act="viewag" data-id="${r.i.id}">Agenda</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+function dselModal(d, h) {
+  const f = ui.dispP || 'all', free = S.instr.filter(i => (f === 'all' || qualified(i, f)) && works(i, d, h) && !busy(i.id, d, h));
+  ui.dsel = { d, h };
+  modal(`<h2>${fmtData(d)} · ${p2(h)}:00</h2><p class="muted" style="margin-bottom:12px">Professors disponibles a aquesta hora. Tria'n un per assignar-hi un alumne.</p>
+  <div class="list">${free.map(i => `<div class="item"><div class="avatar">${ini(i.n)}</div><div class="grow"><b>${esc(i.n)}</b><div class="sm muted">${permsTxt(i)} · ${esc(Object.values(i.veh || {}).slice(0, 2).join(', '))}</div></div><button class="btn sm pri" data-act="dpick" data-id="${i.id}">Assignar alumne</button></div>`).join('')}</div>
+  <div class="acts"><button class="btn" data-act="close">Tancar</button></div>`);
+}
+
+// ---------- FITXES ----------
+function profCard(id) {
+  const i = ins(id), t = iso(today0()), mo = t.slice(0, 7), mine = realLessons().filter(l => l.i === id);
+  const done = mine.filter(l => l.st === 'feta' && l.d.slice(0, 7) === mo).length, sc = mine.filter(l => l.st === 'feta' && l.score), rt = avgRate(id);
+  const studs = myStudents(id), nxt = mine.filter(l => l.st === 'reservada' && !isPast(l.d, l.h)).sort((a, b) => (a.d + p2(a.h)).localeCompare(b.d + p2(b.h))).slice(0, 5);
+  modal(`<div class="row" style="margin-bottom:14px"><div class="avatar" style="width:48px;height:48px;font-size:16px">${ini(i.n)}</div><div class="grow"><h2>${esc(i.n)}</h2><div class="muted sm">${esc(i.tel || '')} · ${esc(i.mail || '')}</div></div></div>
+  <div class="grid g4" style="margin-bottom:14px"><div class="card kpi" style="padding:12px"><div class="l">Classes aquest mes</div><div class="v" style="font-size:22px">${done}</div></div><div class="card kpi" style="padding:12px"><div class="l">Alumnes</div><div class="v" style="font-size:22px">${studs.length}</div></div><div class="card kpi" style="padding:12px"><div class="l">Nota que posa</div><div class="v" style="font-size:22px">${sc.length ? (sc.reduce((a, l) => a + l.score, 0) / sc.length).toFixed(1) : '—'}</div></div><div class="card kpi" style="padding:12px"><div class="l">Valoració</div><div class="v" style="font-size:22px">${rt ? rt.toFixed(1) : '—'}</div></div></div>
+  <h3 style="margin-bottom:6px">Horari</h3><p class="muted sm" style="margin-bottom:12px">${i.dies.map(d => DIES[d]).join(' ')} · de ${p2(Math.min(...i.hrs))}:00 a ${p2(Math.max(...i.hrs) + 1)}:00</p>
+  <h3 style="margin-bottom:6px">Carnets i vehicles</h3><div class="list" style="margin-bottom:12px">${i.perms.map(p => `<div class="item" style="padding:7px 0">${pm(p)}<div class="grow">${esc(i.veh[p] || '—')}</div></div>`).join('')}</div>
+  <h3 style="margin-bottom:6px">Alumnes (${studs.length})</h3><div class="row wrap" style="margin-bottom:12px">${studs.map(s => `<button class="chip" data-act="stu" data-id="${s.id}">${esc(s.n)} ${PERM(s.p).n}</button>`).join('') || '<span class="muted sm">Encara no té alumnes.</span>'}</div>
+  <h3 style="margin-bottom:6px">Properes classes</h3>${nxt.length ? `<div class="list">${nxt.map(l => `<div class="item" style="padding:7px 0"><b style="width:110px">${fmtData(l.d)} ${p2(l.h)}:00</b><div class="grow">${esc(stu(l.s).n)} ${pm(stu(l.s).p)}</div><span class="sm muted">${esc(l.pt || '')}</span></div>`).join('')}</div>` : '<p class="muted sm">Cap classe reservada.</p>'}
+  <div class="acts wrap"><button class="btn" data-act="editprof" data-id="${id}">Editar</button><button class="btn" data-act="viewag" data-id="${id}">Veure agenda</button><button class="btn pri" data-act="close">Tancar</button></div>`, true);
+}
+function stuExtra(id) {
+  const pays = S.pay.filter(x => x.s === id).sort((a, b) => b.d.localeCompare(a.d)), due = pays.filter(x => x.st === 'pendent').reduce((a, x) => a + x.a, 0), ex = examsOf(id);
+  return `<div class="grid g2" style="margin-bottom:16px">
+  <div class="card" style="padding:14px"><div class="row between" style="margin-bottom:6px"><h3>Pagaments</h3><span class="sm ${due ? 'bad-t' : 'muted'}">${due ? eur(due) + ' pendents' : 'Al dia'}</span></div>${pays.slice(0, 4).map(x => `<div class="row between sm" style="padding:3px 0"><span>${esc(x.c)}</span><span>${eur(x.a)} ${pill(x.st)}</span></div>`).join('') || '<span class="sm muted">Cap moviment.</span>'}</div>
+  <div class="card" style="padding:14px"><div class="row between" style="margin-bottom:6px"><h3>Exàmens</h3><span class="sm muted">${ex.length} ${ex.length === 1 ? 'convocatòria' : 'convocatòries'}</span></div>${ex.slice(0, 4).map(e => `<div class="row between sm" style="padding:3px 0"><span>${EX_L[e.t]} · intent ${attemptNo(e)} · ${fmtData(e.d)}</span>${examPill(e.res)}</div>`).join('') || '<span class="sm muted">Cap examen encara.</span>'}</div></div>`;
+}
+function gsFill(q) {
+  const box = $('#gs-r'); if (!box) return; q = normT(q);
+  if (q.length < 2) { box.innerHTML = ''; return; }
+  const ss = (isAdmin() ? S.stu : myStudents(S.meI)).filter(s => normT(s.n).includes(q) || normT(s.tel).includes(q) || normT(s.mail).includes(q)).slice(0, 6);
+  const ii = isAdmin() ? S.instr.filter(i => normT(i.n).includes(q)).slice(0, 4) : [];
+  box.innerHTML = ss.length || ii.length ? [...ss.map(s => `<button data-act="gs-stu" data-id="${s.id}"><b>${esc(s.n)}</b> ${PERM(s.p).n}<span>Alumne · ${esc(s.tel)}</span></button>`), ...ii.map(i => `<button data-act="gs-prof" data-id="${i.id}"><b>${esc(i.n)}</b><span>Professor · ${permsTxt(i)}</span></button>`)].join('') : '<div class="gs-e">Cap resultat</div>';
+}
+
 // ---------- esdeveniments ----------
 document.addEventListener('click', e => {
+  if (!e.target.closest('.gs')) { const gr = $('#gs-r'); if (gr) gr.innerHTML = ''; }
   const el = e.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act, D = el.dataset;
   if (a === 'close-ov') { if (e.target === el) closeModal(); return; }
-  if (['search', 'instr', 'cscore', 'cnote', 'cnext', 'packp', 'packon', 'quotes', 'method', 'cabs', 'xs', 'pol', 'rate', 'liqm', 'imp-f', 'imp-t'].includes(a)) return;
+  if (['search', 'instr', 'cscore', 'cnote', 'cnext', 'packp', 'packon', 'quotes', 'method', 'cabs', 'xs', 'pol', 'rate', 'liqm', 'imp-f', 'imp-t', 'gs'].includes(a)) return;
   if (a === 'bell') return bellModal();
   if (a === 'brand-n') return;
   if (a === 'brand-c') { S.brand.c = D.c; applyBrand(); save(); render(); toast('Color actualitzat'); return; }
@@ -1354,7 +1647,7 @@ document.addEventListener('click', e => {
   if (a === 'notif-go') { closeModal(); ui.page = D.p; if (D.th) ui.thread = D.th; render(); window.scrollTo(0, 0); return; }
   if (a === 'copy') { navigator.clipboard?.writeText(D.v); toast('Codi copiat'); return; }
   if (a === 'report') { downloadReport(D.id); toast('Informe descarregat'); return; }
-  if (a === 'csv') { exportCsv(({ stu: 'alumnes', pay: 'pagaments', ex: 'examens', liq: 'liquidacio', veh: 'vehicles' })[D.k] + '.csv', csvFor(D.k)); toast('CSV descarregat'); return; }
+  if (a === 'csv') { if (D.k === 'emb' && !D.keep) ui.embSel = { p: ui.embP || 'all', k: 'all' }; exportCsv(({ stu: 'alumnes', pay: 'pagaments', ex: 'examens', liq: 'liquidacio', veh: 'vehicles', emb: 'alumnes-per-fase', cls: 'classes', abs: 'avisos-absencia', pre: 'preinscripcions' })[D.k] + '.csv', csvFor(D.k)); toast('CSV descarregat'); return; }
   if (a === 'suggest') {
     const p = suggestHours(S.me); if (!p.length) return toast('No hem trobat hores lliures els propers dies');
     ui.picks = p; const [d] = p[0].split('|'); ui.cal.sel = d; ui.cal.m = new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, 1);
@@ -1387,17 +1680,24 @@ document.addEventListener('click', e => {
       const l = L(), ci = cancelInfo(l), minH = S.policy.slice().sort((a, b) => a.h - b.h).find(x => x.h > 0)?.h || 12;
       modal(`<h2>La teva pràctica</h2><p><b>${fmtData(l.d)} · ${p2(l.h)}:00</b></p><p class="muted">${esc(ins(l.i).n)} · ${esc(vehOf(l))}</p><div style="margin:10px 0 4px">${pinHtml(l.pt)}</div>
       ${l.st === 'reservada' ? `<div class="field" style="margin-top:12px"><label for="mp">Canviar punt de trobada</label>${ptSelect('mp', l.pt)}</div>
-      <div class="notice ${ci.pct ? 'warn' : ''}">${ic('info')}<div>${ci.pct === 0 ? 'Si cancel·les ara és <b>gratuït</b> i la pràctica torna al teu bo.' : ci.lost ? `Falten menys de ${minH} h: si cancel·les, <b>es perd la classe</b>.` : `Cancel·lar ara costa <b>${eur(ci.fee)}</b> (${ci.pct} % de la classe). La pràctica torna al teu bo.`}</div></div>
-      <div class="acts"><button class="btn" data-act="close">Tancar</button><button class="btn bad" data-act="cancel" data-id="${l.id}">Cancel·lar pràctica</button><button class="btn pri" data-act="mine-pt" data-id="${l.id}">Guardar punt</button></div>` : '<div class="acts"><button class="btn" data-act="close">Tancar</button></div>'}`); break;
+      <div class="notice ${ci.pct ? 'warn' : ''}">${ic('info')}<div>Si no pots assistir, marca-ho amb la màxima antelació: l'hora queda lliure per a altres alumnes. ${ci.pct === 0 ? 'Avisant ara, segons la política no hi hauria cap cost.' : ci.lost ? `Falten menys de ${minH} h: segons la política es perdria la classe.` : `Avisant ara, segons la política seria el ${ci.pct} % de la classe (${eur(ci.fee)}).`} L'autoescola decideix si aplica una penalització.</div></div>
+      <div class="acts"><button class="btn" data-act="close">Tancar</button><button class="btn bad" data-act="noshow" data-id="${l.id}">No puc assistir</button><button class="btn pri" data-act="mine-pt" data-id="${l.id}">Guardar punt</button></div>` : '<div class="acts"><button class="btn" data-act="close">Tancar</button></div>'}`); break;
+    }
+    case 'noshow': {
+      const l = L(), ci = cancelInfo(l);
+      modal(`<h2>No puc assistir</h2><p><b>${fmtData(l.d)} · ${p2(l.h)}:00</b> · ${esc(ins(l.i).n)}</p>
+      <div class="field" style="margin-top:12px"><label for="nr">Motiu</label><select id="nr">${ABS_R.map(x => `<option>${x}</option>`).join('')}</select></div>
+      <div class="field"><label for="nn">Comentari (opcional)</label><textarea id="nn" rows="2" style="width:100%"></textarea></div>
+      <div class="notice ${ci.pct ? 'warn' : ''}">${ic('info')}<div>L'hora quedarà lliure i la pràctica tornarà al teu bo. L'autoescola revisarà l'avís i decidirà si s'aplica una penalització. Avisant ara, segons la política: <b>${ci.pct === 0 ? 'sense cost' : ci.lost ? 'es perdria la classe' : ci.pct + ' % · ' + eur(ci.fee)}</b>.</div></div>
+      <div class="acts"><button class="btn" data-act="close">Enrere</button><button class="btn bad" data-act="cancel" data-id="${l.id}">Confirmar que no puc assistir</button></div>`); break;
     }
     case 'mine-pt': { const l = L(); l.pt = $('#mp').value; say(me.id, `He canviat el punt de trobada del ${fmtData(l.d)} a les ${p2(l.h)}:00: ${l.pt}`, 'alumne', me.n); save(); closeModal(); render(); toast('Punt de trobada actualitzat i professor avisat'); break; }
     case 'cancel': {
-      const l = L(), ci = cancelInfo(l); l.st = 'cancel·lada';
-      if (!ci.lost) me.bo++;
-      if (ci.fee > 0 && !ci.lost) S.pay.push({ id: nid(), s: me.id, c: `Cancel·lació tardana · ${fmtData(l.d)} ${p2(l.h)}:00`, a: ci.fee, d: iso(today0()), st: 'pendent' });
-      say(me.id, `Ha cancel·lat la pràctica del ${fmtData(l.d)} a les ${p2(l.h)}:00`, 'alumne', me.n);
+      const l = L(), ci = cancelInfo(l), r = $('#nr') ? $('#nr').value : 'Altres', nt = $('#nn') ? $('#nn').value.trim() : '';
+      l.st = 'cancel·lada'; l.na = { r, note: nt, ts: Date.now(), hrs: ci.hrs, pct: ci.pct, st: 'pendent' }; me.bo++;
+      say(me.id, `No podrà assistir a la pràctica del ${fmtData(l.d)} a les ${p2(l.h)}:00 (${r}).`, 'alumne', me.n);
       notifyWait(l.d, l.h); save(); closeModal(); render();
-      toast(ci.lost ? 'Reserva cancel·lada. S\'ha perdut la classe' : ci.fee ? `Reserva cancel·lada. Cost: ${eur(ci.fee)}` : 'Reserva cancel·lada. Pràctica retornada al bo'); break;
+      toast('Avís enviat. L\'hora queda lliure i la pràctica torna al teu bo'); break;
     }
     case 'rate': L().rate = +D.v; save(); render(); toast('Gràcies per valorar la classe'); break;
     case 'exam': say(me.id, 'Voldria que em sol·licitéssiu plaça per a l\'examen pràctic.', 'alumne', me.n); save(); toast('Sol·licitud enviada a l\'autoescola'); break;
@@ -1500,6 +1800,34 @@ document.addEventListener('click', e => {
       save(); closeModal(); render(); toast('Vehicle desat'); break;
     }
     case 'veh-del': { const c = S.cars.find(x => x.id === D.id); if (carUsers(c).length) return toast('Aquest vehicle està assignat a un professor: canvia-ho primer a Professors'); if (!confirm('Eliminar aquest vehicle?')) return; S.cars = S.cars.filter(x => x.id !== D.id); save(); closeModal(); render(); toast('Vehicle eliminat'); break; }
+    case 'embp': ui.embP = D.k; render(); break;
+    case 'emb-cell': embModal(D.p, D.k); break;
+    case 'backup': download('vial-copia-' + iso(today0()) + '.json', 'application/json', JSON.stringify(S, null, 2)); toast('Còpia descarregada'); break;
+    case 'chat-th': ui.th = D.id; render(); break;
+    case 'chat-q': { const i = $('#chat-in'); i.value = D.t; i.focus(); break; }
+    case 'chat-send': {
+      const inp = $('#chat-in'), t = inp.value.trim(); if (!t) return toast('Escriu un missatge');
+      const th = isAdmin() ? ui.th : thKey(); if (!th) return;
+      S.chat.push({ id: nid(), th, from: isAdmin() ? 'a' : 'u', n: nameOf(), t, ts: Date.now() }); S.cseen[seenKey(th)] = Date.now(); save(); render();
+      const ni = $('#chat-in'); if (ni) ni.focus(); break;
+    }
+    case 'absf': ui.absF = D.k; render(); break;
+    case 'abs-apply': { const l = S.les.find(x => x.id == D.id); absApply(l, +D.pct); save(); render(); toast(l.na.st === 'perdonada' ? 'Avís confirmat sense cost' : 'Decisió aplicada i alumne avisat'); break; }
+    case 'abs-forgive': { const l = S.les.find(x => x.id == D.id); l.na.st = 'perdonada'; l.na.pct = 0; say(l.s, `L'avís d'absència del ${fmtData(l.d)} s'ha acceptat sense penalització.`, 'admin', 'Anna Bosch'); save(); render(); toast('Sense penalització'); break; }
+    case 'abs-custom': { const l = S.les.find(x => x.id == D.id); modal(`<h2>Penalització personalitzada</h2><p class="muted" style="margin-bottom:12px">${esc(stu(l.s).n)} · ${fmtData(l.d)} ${p2(l.h)}:00. Indica quin percentatge del preu de la classe (${eur(PERM(stu(l.s).p).h)}) vols cobrar. Amb 100 es descompta la pràctica del bo.</p><div class="field"><label for="ap2">Percentatge (0–100)</label><input id="ap2" type="number" min="0" max="100" value="${l.na.pct}"></div><div class="acts"><button class="btn" data-act="close">Cancel·lar</button><button class="btn pri" data-act="abs-custom-ok" data-id="${l.id}">Aplicar</button></div>`); break; }
+    case 'abs-custom-ok': { const l = S.les.find(x => x.id == D.id), p = Math.max(0, Math.min(100, +$('#ap2').value || 0)); absApply(l, p); save(); closeModal(); render(); toast(p ? 'Penalització aplicada' : 'Sense penalització'); break; }
+    case 'pref': ui.preF = D.k; render(); break;
+    case 'pre-set': {
+      const x = S.pre.find(y => y.id === D.id); x.st = D.v;
+      if (D.v === 'matriculada') { const id = 's' + nid(); S.stu.push({ id, pid: 'P' + id, n: x.n, p: x.p, tel: x.tel, mail: x.mail, alta: iso(today0()), bo: 0, ref: x.n.split(' ')[0].toUpperCase().normalize('NFD').replace(/[^A-Z]/g, '') + '25' }); x.sid = id; }
+      save(); render(); toast(D.v === 'matriculada' ? x.n + ' ja és alumne del centre' : D.v === 'contactada' ? 'Marcada com a contactada' : 'Preinscripció descartada'); break;
+    }
+    case 'dispp': ui.dispP = D.k; render(); break;
+    case 'dsel': dselModal(D.d, +D.h); break;
+    case 'dpick': ui.instr = D.id; assignModal(ui.dsel.d, ui.dsel.h); break;
+    case 'pcard': profCard(D.id); break;
+    case 'gs-stu': { const r = $('#gs-r'), g = $('#gs'); if (r) r.innerHTML = ''; if (g) g.value = ''; stuModal(D.id); break; }
+    case 'gs-prof': { const r = $('#gs-r'), g = $('#gs'); if (r) r.innerHTML = ''; if (g) g.value = ''; profCard(D.id); break; }
     case 'payf': ui.payFilter = D.k; render(); break;
     case 'paid': applyPaid(P()); save(); render(); toast('Cobrament registrat'); break;
     case 'remind': toast(`Recordatori enviat a ${stu(P().s).n} (simulat)`); break;
@@ -1581,6 +1909,7 @@ document.addEventListener('input', e => {
   else if (a === 'cnote') ui.close.note = e.target.value;
   else if (a === 'cnext') ui.close.next = e.target.value;
   else if (a === 'imp-t') impPreview();
+  else if (a === 'gs') gsFill(e.target.value);
 });
 document.addEventListener('change', e => {
   const a = e.target.dataset.act, D = e.target.dataset;
@@ -1604,6 +1933,7 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && !e.shiftKey && e.target.id === 'chat-in') { e.preventDefault(); document.querySelector('[data-act=chat-send]').click(); }
   if (e.key === 'Enter' && e.target.id === 'mt') { e.preventDefault(); document.querySelector('[data-act=send]').click(); }
   if (e.key === 'Enter' && e.target.id === 'cc') { e.preventDefault(); document.querySelector('[data-act=coupon]').click(); }
 });
