@@ -350,6 +350,7 @@ const save = () => localStorage.setItem(KEY, JSON.stringify(S));
 
 // ---------- marca: Vial (producte) + marca blanca de cada autoescola ----------
 S.brand = S.brand || { name: 'Autoescola Bages', c: '#3e6ae1' }; if (S.brand.c === '#1d3b6e') S.brand.c = '#3e6ae1';
+S.cars = S.cars || seedCars();
 const BRAND_COLORS = [['Blau', '#3e6ae1'], ['Verd', '#0f7a55'], ['Vermell', '#c8362d'], ['Taronja', '#c2410c'], ['Morat', '#6d3fc4'], ['Grafit', '#2b3340']];
 const LOGO = '<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="miter" stroke-linecap="butt"/></svg>';
 const EX_L = { teoric: 'Examen teòric', circuit: 'Examen de circuit', practic: 'Examen pràctic' };
@@ -374,7 +375,7 @@ const ui = { page: null, weekOff: 0, instr: 'all', vid: 'v5', fake: 0, timer: nu
 const NAV = {
   alumne: [['inici', 'Inici', 'home'], ['practiques', 'Pràctiques', 'cal'], ['temari', 'Temari', 'book'], ['classes', 'Vídeos', 'video'], ['tests', 'Tests', 'test'], ['examens', 'Exàmens', 'flag'], ['tramits', 'Tràmits', 'doc'], ['pagaments', 'Pagaments', 'card'], ['carnets', 'Més carnets', 'plus']],
   prof: [['avui', 'Avui', 'home'], ['agenda', 'Agenda', 'cal'], ['alumnes', 'Alumnes', 'users'], ['examens', 'Exàmens', 'flag']],
-  admin: [['resum', 'Resum', 'chart'], ['agenda', 'Agenda', 'cal'], ['alumnes', 'Alumnes', 'users'], ['profs', 'Professors', 'car'], ['examens', 'Exàmens', 'flag'], ['tramits', 'Tràmits', 'doc'], ['pagaments', 'Pagaments', 'card'], ['videos', 'Vídeos', 'video'], ['config', 'Configuració', 'cog']],
+  admin: [['resum', 'Resum', 'chart'], ['agenda', 'Agenda', 'cal'], ['alumnes', 'Alumnes', 'users'], ['profs', 'Professors', 'award'], ['vehicles', 'Vehicles', 'car'], ['examens', 'Exàmens', 'flag'], ['tramits', 'Tràmits', 'doc'], ['pagaments', 'Pagaments', 'card'], ['liquidacio', 'Liquidació', 'chart'], ['videos', 'Vídeos', 'video'], ['config', 'Configuració', 'cog']],
 };
 function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('show'), 2800); }
 function modal(html, wide) {
@@ -529,7 +530,7 @@ const head = (t, s, extra = '') => `<div class="page-h row between wrap"><div><h
 const VIEWS = () => ({
   alumne: { inici: vInici, practiques: vPractiques, temari: vTemari, classes: vClasses, tests: vTests, examens: vExams, tramits: vTramits, pagaments: vPagaments, carnets: vCarnets },
   prof: { avui: vAvui, agenda: vAgenda, alumnes: vAlumnes, examens: vExamsStaff },
-  admin: { resum: vResum, agenda: vAgenda, alumnes: vAlumnes, profs: vProfs, examens: vExamsStaff, tramits: vTramitsAdmin, pagaments: vPagAdmin, videos: vVideosAdmin, config: vConfig },
+  admin: { resum: vResum, agenda: vAgenda, alumnes: vAlumnes, profs: vProfs, vehicles: vVeh, examens: vExamsStaff, tramits: vTramitsAdmin, pagaments: vPagAdmin, liquidacio: vLiq, videos: vVideosAdmin, config: vConfig },
 })[S.role];
 
 const LOGGED = () => { try { return sessionStorage.getItem('vial-in') === '1'; } catch { return true; } };
@@ -852,7 +853,7 @@ function vAgenda() {
     if (isPast(ds, h) || !works(i, ds, h)) return `<div><button class="slot past" disabled aria-label="No disponible"></button></div>`;
     return `<div><button class="slot free" data-act="aassign" data-d="${ds}" data-h="${h}"><span>+ Assignar</span></button></div>`;
   }).join('')).join('');
-  return `${head(isProf() ? 'La meva agenda' : 'Agenda', isProf() ? `Les teves classes de la setmana · ${permsTxt(i)}` : 'Horari setmanal per professor.', `<button class="btn pri" data-act="aassign" data-d="${iso(today0())}" data-h="9">${ic('plus')} Nova pràctica</button>`)}
+  return `${head(isProf() ? 'La meva agenda' : 'Agenda', isProf() ? `Les teves classes de la setmana · ${permsTxt(i)}` : 'Horari setmanal per professor.', `<div class="row">${isAdmin() ? '<button class="btn" data-act="reas">Reassignar classes</button>' : ''}<button class="btn pri" data-act="aassign" data-d="${iso(today0())}" data-h="9">${ic('plus')} Nova pràctica</button></div>`)}
   <div class="row between wrap" style="margin-bottom:12px">${calNav()}${isProf() ? '' : `<div style="width:320px"><select data-act="instr" aria-label="Professor">${S.instr.map(x => `<option value="${x.id}" ${ui.instr === x.id ? 'selected' : ''}>${esc(x.n)} · ${permsTxt(x)}</option>`).join('')}</select></div>`}</div>
   <div class="scroll-x"><div class="cal">${calHead(days)}${cells}</div></div>
   <div class="legend"><span><i style="background:var(--info-soft)"></i>Reservada</span><span><i style="background:var(--warn-soft)"></i>Per registrar</span><span><i style="background:#eef0ec"></i>Feta</span><span><i style="background:#e9d9d6"></i>Bloquejada</span><span><i style="background:#f0f2ee"></i>Fora d'horari</span></div>`;
@@ -876,7 +877,7 @@ function vAlumnes() {
   const q = ui.q.toLowerCase(), base = isProf() ? myStudents(S.meI) : S.stu;
   const list = base.filter(s => s.n.toLowerCase().includes(q) && (isProf() || ui.permF === 'all' || s.p === ui.permF));
   const used = PERMITS.filter(p => base.some(s => s.p === p.k));
-  return `${head(isProf() ? 'Els meus alumnes' : 'Alumnes', `${base.length} matrícules · ${new Set(base.map(s => s.pid)).size} persones.`, isAdmin() ? `<div class="row"><button class="btn" data-act="csv" data-k="stu">${ic('down')} Exportar CSV</button><button class="btn pri" data-act="newstu">${ic('plus')} Nova matrícula</button></div>` : '')}
+  return `${head(isProf() ? 'Els meus alumnes' : 'Alumnes', `${base.length} matrícules · ${new Set(base.map(s => s.pid)).size} persones.`, isAdmin() ? `<div class="row"><button class="btn" data-act="imp">${ic('up')} Importar CSV</button><button class="btn" data-act="csv" data-k="stu">${ic('down')} Exportar CSV</button><button class="btn pri" data-act="newstu">${ic('plus')} Nova matrícula</button></div>` : '')}
   ${isProf() ? '' : `<div class="chips"><button class="chip ${ui.permF === 'all' ? 'on' : ''}" data-act="permf" data-k="all">Tots <b>${base.length}</b></button>${used.map(p => `<button class="chip ${ui.permF === p.k ? 'on' : ''}" data-act="permf" data-k="${p.k}">${p.n} <b>${base.filter(s => s.p === p.k).length}</b></button>`).join('')}</div>`}
   <div style="margin-bottom:12px" class="search"><input type="search" placeholder="Cerca per nom" value="${esc(ui.q)}" data-act="search" aria-label="Cerca"></div>
   <div class="card flush scroll-x"><table><thead><tr><th>Alumne</th><th>Carnet</th><th>Temari</th><th>Pràctiques</th><th>Nota</th><th>Examen</th>${isAdmin() ? '<th>Tràmits</th><th>Pagaments</th>' : '<th>Propera classe</th><th></th>'}</tr></thead><tbody>
@@ -903,6 +904,7 @@ function vResum() {
   const ready = S.stu.filter(s => readiness(s.id).ok && !nextExam(s.id) && trv(s.id, 'practic') !== 'ok');
   const perP = PERMITS.map(p => ({ l: p.n, v: S.stu.filter(s => s.p === p.k).length })).filter(x => x.v);
   return `${head('Resum', `${fmtData(t)} · ${esc(S.brand.name)}`)}
+  ${tasksCard()}
   <div class="grid g4" style="margin-bottom:16px">
     <div class="card kpi"><div class="l">Alumnes</div><div class="v">${new Set(S.stu.map(s => s.pid)).size}</div><div class="s">${S.stu.length} matrícules · ${perP.length} carnets</div></div>
     <div class="card kpi"><div class="l">Pràctiques avui</div><div class="v">${hoy.length}</div><div class="s">${S.instr.length} professors</div></div>
@@ -1100,6 +1102,8 @@ function exportCsv(name, rows) {
   download(name, 'text/csv;charset=utf-8', '﻿' + rows.map(r => r.map(q).join(';')).join('\r\n'));
 }
 function csvFor(kind) {
+  if (kind === 'liq') return liqCsv();
+  if (kind === 'veh') return vehCsv();
   if (kind === 'stu') return [['Nom', 'Carnet', 'Telèfon', 'Correu', 'Alta', 'Pràctiques fetes', 'Al bo', 'Nota mitjana', 'Llest per a examen'], ...S.stu.map(s => [s.n, PERM(s.p).n, s.tel, s.mail, s.alta, doneN(s.id), s.bo, scoreAvg(s.id) ? scoreAvg(s.id).toFixed(1).replace('.', ',') : '', readiness(s.id).ok ? 'Sí' : 'No'])];
   if (kind === 'pay') return [['Data', 'Alumne', 'Carnet', 'Concepte', 'Import (€)', 'Estat'], ...S.pay.map(x => [x.d, stu(x.s).n, PERM(stu(x.s).p).n, x.c, x.a.toFixed(2).replace('.', ','), x.st])];
   return [['Alumne', 'Carnet', 'Examen', 'Data', 'Hora', 'Lloc', 'Intent', 'Resultat', 'Observacions'], ...S.exams.map(e => [stu(e.s).n, PERM(stu(e.s).p).n, EX_L[e.t], e.d, e.h, e.pl, attemptNo(e), e.res, e.note])];
@@ -1138,12 +1142,211 @@ function heatmap() {
   return `<div class="card"><div class="card-h"><h2>Ocupació d'aquesta setmana</h2><span class="muted sm">${cap ? Math.round(used / cap * 100) : 0}% de les hores dels professors</span></div><div class="hmap"><div></div>${days.map(d => `<div class="hmh c">${DIES[d.getDay()]} ${d.getDate()}</div>`).join('')}${cells}</div></div>`;
 }
 
+// ---------- TASQUES DEL DIA ----------
+const lastLessonDate = sid => { const ds = realLessons().filter(l => l.s === sid && (l.st === 'feta' || l.st === 'reservada')).map(l => l.d).sort(); return ds.length ? ds[ds.length - 1] : null; };
+function inactiveStu(days = 21) {
+  const lim = iso(addDays(today0(), -days));
+  return S.stu.filter(s => trv(s.id, 'practic') !== 'ok' && !S.exams.some(e => e.s === s.id && e.t === 'practic' && e.res === 'aprovat') && (doneN(s.id) > 0 || s.bo > 0))
+    .filter(s => (lastLessonDate(s.id) || s.alta) < lim);
+}
+function tasksToday() {
+  const t = iso(today0()), w = iso(addDays(today0(), 7)), out = [], pl = (n, a, b) => n === 1 ? a : b;
+  const rev = trToReview();
+  if (rev) out.push({ n: rev, t: `${rev} ${pl(rev, 'tràmit', 'tràmits')} per validar`, x: 'Documents que els alumnes han enviat i esperen revisió', go: 'tramits', b: 'Revisar' });
+  const pp = payPending();
+  if (pp.length) out.push({ n: pp.length, t: `${pp.length} ${pl(pp.length, 'cobrament pendent', 'cobraments pendents')}`, x: `Import total: ${eur(pp.reduce((a, x) => a + x.a, 0))}`, go: 'pagaments', b: 'Veure' });
+  const reg = S.instr.reduce((a, i) => a + toRegister(i.id).length, 0);
+  if (reg) out.push({ n: reg, t: `${reg} ${pl(reg, 'classe', 'classes')} sense registrar`, x: 'Els professors encara no n\'han anotat la nota ni el temari', go: 'agenda', b: 'Agenda' });
+  const ex = S.exams.filter(e => e.res === 'convocat' && e.d >= t && e.d <= w).sort((a, b) => a.d.localeCompare(b.d));
+  if (ex.length) out.push({ n: ex.length, t: `${ex.length} ${pl(ex.length, 'examen', 'exàmens')} aquesta setmana`, x: ex.slice(0, 3).map(e => `${stu(e.s).n} (${fmtData(e.d)})`).join(' · '), go: 'examens', b: 'Veure' });
+  const rd = S.stu.filter(s => readiness(s.id).ok && !nextExam(s.id) && trv(s.id, 'practic') !== 'ok');
+  if (rd.length) out.push({ n: rd.length, t: `${rd.length} ${pl(rd.length, 'alumne preparat', 'alumnes preparats')} per a l'examen`, x: rd.slice(0, 3).map(s => s.n).join(' · ') + (rd.length > 3 ? '…' : ''), go: 'alumnes', b: 'Veure' });
+  const ina = inactiveStu();
+  if (ina.length) out.push({ n: ina.length, t: `${ina.length} ${pl(ina.length, 'alumne', 'alumnes')} sense classes des de fa més de 3 setmanes`, x: ina.slice(0, 3).map(s => s.n).join(' · ') + (ina.length > 3 ? '…' : ''), go: 'alumnes', b: 'Veure' });
+  const ca = carAlerts();
+  if (ca.length) out.push({ n: ca.length, t: `${ca.length} ${pl(ca.length, 'caducitat', 'caducitats')} de vehicles`, x: ca.slice(0, 2).map(a => `${a.c.n}: ${a.l}`).join(' · '), go: 'vehicles', b: 'Revisar' });
+  return out;
+}
+function tasksCard() {
+  const ts = tasksToday();
+  return `<div class="card" style="margin-bottom:16px"><div class="card-h"><h2>Tasques d'avui</h2><span class="muted sm">${ts.length ? `${ts.length} ${ts.length === 1 ? 'tasca' : 'tasques'} per fer` : 'Tot al dia'}</span></div>${ts.length ? `<div class="list">${ts.map(x => `<div class="item task"><span class="tcount">${x.n}</span><div class="grow"><b>${esc(x.t)}</b><div class="sm muted">${esc(x.x)}</div></div><button class="btn sm" data-act="go" data-p="${x.go}">${x.b}</button></div>`).join('')}</div>` : '<p class="muted">No hi ha cap tasca pendent.</p>'}</div>`;
+}
+
+// ---------- LIQUIDACIÓ DE PROFESSORS ----------
+const MESOS_L = ['gener', 'febrer', 'març', 'abril', 'maig', 'juny', 'juliol', 'agost', 'setembre', 'octubre', 'novembre', 'desembre'];
+const monthLabel = m => `${MESOS_L[+m.slice(5) - 1]} de ${m.slice(0, 4)}`;
+const monthsList = () => { const n = today0(); return Array.from({ length: 6 }, (_, k) => { const d = new Date(n.getFullYear(), n.getMonth() - k, 1); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}`; }); };
+const rateOf = i => (typeof i.rate === 'number' ? i.rate : 14);
+function liqRows(m) {
+  return S.instr.map(i => {
+    const mine = S.les.filter(l => l.i === i.id && l.s && l.d.slice(0, 7) === m);
+    const h = mine.filter(l => l.st === 'feta').length, ab = mine.filter(l => l.st === 'absent').length, pend = mine.filter(l => l.st === 'reservada').length;
+    return { i, h, ab, pend, rate: rateOf(i), total: h * rateOf(i) };
+  });
+}
+function liqCsv() {
+  const m = ui.liqM || monthsList()[0], rows = liqRows(m);
+  return [['Professor', 'Mes', 'Classes fetes (h)', 'No presentats', 'Tarifa (€/h)', 'Total (€)'], ...rows.map(r => [r.i.n, m, r.h, r.ab, r.rate.toFixed(2).replace('.', ','), r.total.toFixed(2).replace('.', ',')]), ['Total', m, rows.reduce((a, r) => a + r.h, 0), '', '', rows.reduce((a, r) => a + r.total, 0).toFixed(2).replace('.', ',')]];
+}
+function vLiq() {
+  const ms = monthsList(); if (!ui.liqM || !ms.includes(ui.liqM)) ui.liqM = ms[0];
+  const rows = liqRows(ui.liqM), th = rows.reduce((a, r) => a + r.h, 0), tt = rows.reduce((a, r) => a + r.total, 0);
+  return `${head('Liquidació de professors', `Hores impartides i import a liquidar per professor · ${monthLabel(ui.liqM)}.`, `<div class="row"><select data-act="liqm" aria-label="Mes" style="width:190px">${ms.map(m => `<option value="${m}" ${m === ui.liqM ? 'selected' : ''}>${monthLabel(m)}</option>`).join('')}</select><button class="btn" data-act="csv" data-k="liq">${ic('down')} Exportar CSV</button></div>`)}
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card kpi"><div class="l">Hores impartides</div><div class="v">${th}</div><div class="s">${monthLabel(ui.liqM)}</div></div>
+    <div class="card kpi"><div class="l">Import a liquidar</div><div class="v">${eur(tt)}</div><div class="s">segons la tarifa de cada professor</div></div>
+    <div class="card kpi"><div class="l">Classes per registrar</div><div class="v">${rows.reduce((a, r) => a + r.pend, 0)}</div><div class="s">encara no compten a la liquidació</div></div>
+  </div>
+  <div class="card flush scroll-x"><table><thead><tr><th>Professor</th><th>Carnets</th><th class="right">Classes fetes</th><th class="right">No presentats</th><th class="right">Tarifa (€/h)</th><th class="right">Total</th></tr></thead><tbody>
+  ${rows.map(r => `<tr><td><b>${esc(r.i.n)}</b></td><td class="sm">${permsTxt(r.i)}</td><td class="right">${r.h} h</td><td class="right">${r.ab ? r.ab : '<span class="muted">—</span>'}</td><td class="right"><input type="number" min="0" step="0.5" value="${r.rate}" data-act="rate" data-id="${r.i.id}" aria-label="Tarifa de ${esc(r.i.n)}" style="width:90px;text-align:right"></td><td class="right"><b>${eur(r.total)}</b></td></tr>`).join('')}
+  <tr><td colspan="2"><b>Total</b></td><td class="right"><b>${th} h</b></td><td></td><td></td><td class="right"><b>${eur(tt)}</b></td></tr></tbody></table></div>
+  <p class="muted sm" style="margin-top:12px">Només es compten les classes marcades com a fetes. Les classes amb alumne no presentat s'indiquen a part i no se sumen a l'import.</p>`;
+}
+
+// ---------- VEHICLES ----------
+const dFmt = s => s ? `${s.slice(8)}/${s.slice(5, 7)}/${s.slice(0, 4)}` : '—';
+const daysTo = s => Math.round((new Date(s + 'T00:00') - today0()) / 864e5);
+function carState(s) {
+  const d = daysTo(s);
+  return d < 0 ? { cls: 'bad', t: `Caducat fa ${-d} d`, d } : d <= 30 ? { cls: 'warn', t: `Caduca en ${d} d`, d } : { cls: 'ok', t: 'Vigent', d };
+}
+const CAR_K = [['itv', 'ITV'], ['seg', 'Assegurança'], ['rev', 'Revisió']];
+function carAlerts() {
+  const out = [];
+  (S.cars || []).forEach(c => CAR_K.forEach(([k, l]) => { const st = carState(c[k]); if (st.cls !== 'ok') out.push({ c, k, l: `${l} ${st.cls === 'bad' ? 'caducada' : 'caduca en ' + st.d + ' d'}` }); }));
+  return out;
+}
+function seedCars() {
+  const names = [...new Set(S.instr.flatMap(i => Object.values(i.veh || {})))];
+  const off = [[-12, 200, 60, 48210], [118, 320, 125, 61450], [140, 90, 210, 22310], [260, 148, 120, 35780], [75, 300, 40, 18900], [410, 150, 300, 9200], [22, 220, 80, 27640], [330, 95, 190, 15300], [180, 380, 95, 72100], [95, 260, 130, 108400], [500, 340, 270, 143200], [160, 117, 155, 89600]];
+  const let3 = ['KLM', 'JTR', 'HPV', 'GBN', 'FDC', 'CZX', 'MWL', 'BRS', 'DNT', 'LGH', 'PXK', 'VCF'];
+  return names.map((n, k) => { const o = off[k % off.length]; return { id: 'c' + (k + 1), n, plate: `${1000 + (k * 3717) % 9000} ${let3[k % let3.length]}`, itv: iso(addDays(today0(), o[0])), seg: iso(addDays(today0(), o[1])), rev: iso(addDays(today0(), o[2])), km: o[3] }; });
+}
+function syncCars() {
+  S.cars = S.cars || seedCars();
+  [...new Set(S.instr.flatMap(i => Object.values(i.veh || {})))].forEach(n => { if (!S.cars.some(c => c.n === n)) S.cars.push({ id: 'c' + nid(), n, plate: '', itv: iso(addDays(today0(), 365)), seg: iso(addDays(today0(), 365)), rev: iso(addDays(today0(), 365)), km: 0 }); });
+}
+const carUsers = c => S.instr.filter(i => Object.values(i.veh || {}).includes(c.n));
+function vehCsv() {
+  syncCars();
+  return [['Vehicle', 'Matrícula', 'Professors', 'ITV', 'Assegurança', 'Revisió', 'Quilòmetres'], ...S.cars.map(c => [c.n, c.plate, carUsers(c).map(i => i.n).join(' / '), dFmt(c.itv), dFmt(c.seg), dFmt(c.rev), c.km])];
+}
+function vVeh() {
+  syncCars();
+  const al = carAlerts(), bad = al.filter(a => carState(a.c[a.k]).cls === 'bad').length;
+  const cell = d => { const s = carState(d); return `${dFmt(d)}${s.cls === 'ok' ? '' : `<div><span class="pill ${s.cls}">${s.t}</span></div>`}`; };
+  return `${head('Vehicles', 'Control de l\'ITV, l\'assegurança i les revisions de la flota del centre.', `<div class="row"><button class="btn" data-act="csv" data-k="veh">${ic('down')} Exportar CSV</button><button class="btn pri" data-act="veh-new">${ic('plus')} Nou vehicle</button></div>`)}
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card kpi"><div class="l">Vehicles</div><div class="v">${S.cars.length}</div><div class="s">a la flota</div></div>
+    <div class="card kpi"><div class="l">Caduquen en 30 dies</div><div class="v">${al.length - bad}</div><div class="s">documents per renovar</div></div>
+    <div class="card kpi"><div class="l">Caducats</div><div class="v" style="${bad ? 'color:var(--bad)' : ''}">${bad}</div><div class="s">${bad ? 'cal actuar de seguida' : 'cap document caducat'}</div></div>
+  </div>
+  <div class="card flush scroll-x"><table><thead><tr><th>Vehicle</th><th>Matrícula</th><th>Professors</th><th>ITV</th><th>Assegurança</th><th>Revisió</th><th class="right">Quilòmetres</th><th></th></tr></thead><tbody>
+  ${S.cars.map(c => `<tr><td><b>${esc(c.n)}</b></td><td>${esc(c.plate) || '<span class="muted">—</span>'}</td><td class="sm">${carUsers(c).map(i => esc(i.n)).join(', ') || '<span class="muted">Sense assignar</span>'}</td><td>${cell(c.itv)}</td><td>${cell(c.seg)}</td><td>${cell(c.rev)}</td><td class="right">${c.km.toLocaleString('ca-ES')} km</td><td class="right"><button class="btn sm" data-act="veh-edit" data-id="${c.id}">Editar</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+function vehModal(id) {
+  const c = id ? S.cars.find(x => x.id === id) : { n: '', plate: '', itv: iso(addDays(today0(), 365)), seg: iso(addDays(today0(), 365)), rev: iso(addDays(today0(), 180)), km: 0 };
+  modal(`<h2>${id ? 'Editar vehicle' : 'Nou vehicle'}</h2>
+  <div class="field"><label for="vn">Vehicle</label><input id="vn" value="${esc(c.n)}" placeholder="Marca i model"></div>
+  <div class="grid g2"><div class="field"><label for="vp">Matrícula</label><input id="vp" value="${esc(c.plate)}"></div><div class="field"><label for="vk">Quilòmetres</label><input id="vk" type="number" min="0" value="${c.km}"></div></div>
+  <div class="grid g3"><div class="field"><label for="vi">ITV vàlida fins</label><input id="vi" type="date" value="${c.itv}"></div><div class="field"><label for="vs">Assegurança fins</label><input id="vs" type="date" value="${c.seg}"></div><div class="field"><label for="vr">Propera revisió</label><input id="vr" type="date" value="${c.rev}"></div></div>
+  <div class="acts">${id ? `<button class="btn bad" data-act="veh-del" data-id="${id}" style="margin-right:auto">Eliminar</button>` : ''}<button class="btn" data-act="close">Cancel·lar</button><button class="btn pri" data-act="veh-ok" data-id="${id || ''}">Desar</button></div>`);
+}
+
+// ---------- REASSIGNAR CLASSES ----------
+function reasModal() {
+  const t = iso(today0());
+  modal(`<h2>Reassignar classes</h2><p class="muted" style="margin-bottom:14px">Útil quan un professor falla (baixa, avaria, vacances). Les pràctiques reservades passaran a un altre professor habilitat per al mateix permís i amb l'hora lliure. S'avisa cada alumne.</p>
+  <div class="field"><label for="ri">Professor que falla</label><select id="ri">${S.instr.map(x => `<option value="${x.id}" ${x.id === ui.instr ? 'selected' : ''}>${esc(x.n)} · ${permsTxt(x)}</option>`).join('')}</select></div>
+  <div class="grid g2"><div class="field"><label for="r1">Des del dia</label><input id="r1" type="date" value="${t}"></div><div class="field"><label for="r2">Fins al dia</label><input id="r2" type="date" value="${t}"></div></div>
+  <label class="chk-row" style="margin:4px 0 0"><input type="checkbox" id="rb" checked style="width:auto;min-height:0"> Bloqueja també l'agenda d'aquest professor en aquest període</label>
+  <div class="acts"><button class="btn" data-act="close">Cancel·lar</button><button class="btn pri" data-act="reas-ok">Reassignar</button></div>`);
+}
+function lessonsToMove(from, d1, d2) {
+  return S.les.filter(l => l.i === from && l.s && l.st === 'reservada' && l.d >= d1 && l.d <= d2 && !isPast(l.d, l.h)).sort((a, b) => (a.d + p2(a.h)).localeCompare(b.d + p2(b.h)));
+}
+function reassign(from, d1, d2, block) {
+  const moved = [], fail = [];
+  lessonsToMove(from, d1, d2).forEach(l => {
+    const s = stu(l.s), load = x => S.les.filter(y => y.i === x.id && y.d === l.d && y.st !== 'cancel·lada').length;
+    const c = S.instr.filter(x => x.id !== from && qualified(x, s.p) && works(x, l.d, l.h) && !busy(x.id, l.d, l.h)).sort((a, b) => load(a) - load(b));
+    if (!c.length) return fail.push(l);
+    const old = l.i; l.i = c[0].id; moved.push({ l, to: c[0] });
+    say(l.s, `La pràctica del ${fmtData(l.d)} a les ${p2(l.h)}:00 la farà ${c[0].n} (abans ${ins(old).n}). El punt de trobada no canvia.`, 'admin', 'Anna Bosch');
+  });
+  let blocked = 0;
+  if (block) {
+    for (let d = new Date(d1 + 'T00:00'); iso(d) <= d2; d = addDays(d, 1)) {
+      const ds = iso(d);
+      HORES.forEach(h => { if (works(ins(from), ds, h) && !busy(from, ds, h) && !isPast(ds, h)) { S.les.push({ id: nid(), s: '', i: from, d: ds, h, st: 'bloc', note: 'No disponible' }); blocked++; } });
+    }
+  }
+  return { moved, fail, blocked };
+}
+function reasResult(from, r) {
+  modal(`<h2>Reassignació feta</h2><p class="muted" style="margin-bottom:12px">${esc(ins(from).n)}: ${r.moved.length} ${r.moved.length === 1 ? 'classe reassignada' : 'classes reassignades'}${r.fail.length ? `, ${r.fail.length} sense solució` : ''}${r.blocked ? ` · ${r.blocked} hores bloquejades` : ''}.</p>
+  ${r.moved.length ? `<div class="list" style="max-height:220px;overflow:auto">${r.moved.map(x => `<div class="item"><div class="grow"><b>${esc(stu(x.l.s).n)}</b> ${pm(stu(x.l.s).p)}<div class="sm muted">${fmtData(x.l.d)} · ${p2(x.l.h)}:00</div></div><span class="sm">→ ${esc(x.to.n)}</span></div>`).join('')}</div>` : ''}
+  ${r.fail.length ? `<div class="notice warn" style="margin-top:12px">${ic('info')}<div><b>No s'han pogut reassignar:</b> ${r.fail.map(l => `${esc(stu(l.s).n)} (${fmtData(l.d)} ${p2(l.h)}:00)`).join('; ')}. Cap altre professor habilitat té l'hora lliure: assigna-les a mà o cancel·la-les.</div></div>` : ''}
+  <div class="acts"><button class="btn pri" data-act="close">Tancar</button></div>`);
+}
+
+// ---------- IMPORTAR ALUMNES (CSV) ----------
+const normT = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+function csvCells(line, d) {
+  const out = []; let cur = '', q = false;
+  for (let k = 0; k < line.length; k++) {
+    const ch = line[k];
+    if (q) { if (ch === '"' && line[k + 1] === '"') { cur += '"'; k++; } else if (ch === '"') q = false; else cur += ch; }
+    else if (ch === '"') q = true; else if (ch === d) { out.push(cur.trim()); cur = ''; } else cur += ch;
+  }
+  out.push(cur.trim()); return out;
+}
+function impParse(text) {
+  const lines = String(text || '').replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim());
+  if (!lines.length) return { rows: [], errs: [] };
+  const d = [';', '\t', ','].map(x => [x, lines[0].split(x).length]).sort((a, b) => b[1] - a[1])[0][0];
+  let col = { n: 0, p: 1, tel: 2, mail: 3 }, start = 0;
+  const h = csvCells(lines[0], d).map(normT);
+  if (h.some(x => x.includes('nom') || x === 'name' || x.includes('alumne'))) {
+    const f = fn => h.findIndex(fn);
+    col = { n: Math.max(0, f(x => x.includes('nom') || x === 'name' || x.includes('alumne'))), p: f(x => x.includes('carnet') || x.includes('permis') || x.includes('permit')), tel: f(x => x.includes('tel') || x.includes('mobil')), mail: f(x => x.includes('correu') || x.includes('mail')) };
+    start = 1;
+  }
+  const rows = [], errs = [], seen = new Set();
+  lines.slice(start).forEach((ln, k) => {
+    const c = csvCells(ln, d), line = k + 1 + start, n = (c[col.n] || '').trim();
+    if (!n) return errs.push({ line, t: 'Falta el nom' });
+    const raw = col.p >= 0 ? (c[col.p] || '').trim() : '', key = raw.toUpperCase().replace(/[\s+\-]/g, '');
+    const perm = raw ? PERMITS.find(p => p.k === key || p.n.replace(/[\s+\-]/g, '') === key) : PERMITS.find(p => p.k === 'B');
+    if (!perm) return errs.push({ line, t: `${n}: carnet «${raw}» desconegut` });
+    const dup = normT(n) + '|' + perm.k;
+    if (seen.has(dup) || S.stu.some(s => normT(s.n) === normT(n) && s.p === perm.k)) return errs.push({ line, t: `${n} (${perm.n}): ja existeix` });
+    seen.add(dup);
+    rows.push({ n, p: perm.k, tel: col.tel >= 0 ? (c[col.tel] || '') : '', mail: col.mail >= 0 ? (c[col.mail] || '') : '' });
+  });
+  return { rows, errs };
+}
+function impModal() {
+  modal(`<h2>Importar alumnes</h2><p class="muted" style="margin-bottom:14px">Carrega un fitxer CSV o enganxa'n el contingut. Columnes: Nom, Carnet, Telèfon i Correu. La primera fila pot ser la capçalera.</p>
+  <div class="field"><label for="imp-f">Fitxer CSV</label><input id="imp-f" type="file" accept=".csv,.txt,text/csv" data-act="imp-f"></div>
+  <div class="field"><label for="imp-t">O enganxa el contingut</label><textarea id="imp-t" data-act="imp-t" rows="5" placeholder="Nom;Carnet;Telèfon;Correu"></textarea></div>
+  <div id="imp-p" class="sm muted">Encara no hi ha dades.</div>
+  <div class="acts"><button class="btn" data-act="imp-tpl" style="margin-right:auto">${ic('down')} Plantilla</button><button class="btn" data-act="close">Cancel·lar</button><button class="btn pri" id="imp-go" data-act="imp-ok" disabled>Importar</button></div>`, true);
+}
+function impPreview() {
+  const r = impParse($('#imp-t').value), box = $('#imp-p'), go = $('#imp-go');
+  go.disabled = !r.rows.length; go.textContent = r.rows.length ? `Importar ${r.rows.length} ${r.rows.length === 1 ? 'alumne' : 'alumnes'}` : 'Importar';
+  if (!r.rows.length && !r.errs.length) { box.innerHTML = 'Encara no hi ha dades.'; return; }
+  box.innerHTML = `${r.rows.length ? `<div class="card flush scroll-x" style="margin-bottom:8px;max-height:200px;overflow:auto"><table><thead><tr><th>Nom</th><th>Carnet</th><th>Telèfon</th><th>Correu</th></tr></thead><tbody>${r.rows.slice(0, 8).map(x => `<tr><td>${esc(x.n)}</td><td>${PERM(x.p).n}</td><td>${esc(x.tel)}</td><td>${esc(x.mail)}</td></tr>`).join('')}${r.rows.length > 8 ? `<tr><td colspan="4" class="muted sm">… i ${r.rows.length - 8} més</td></tr>` : ''}</tbody></table></div>` : ''}
+  ${r.errs.length ? `<div class="notice warn">${ic('info')}<div><b>${r.errs.length} ${r.errs.length === 1 ? 'fila no s\'importarà' : 'files no s\'importaran'}:</b> ${r.errs.slice(0, 4).map(e => `fila ${e.line}, ${esc(e.t)}`).join('; ')}${r.errs.length > 4 ? '…' : ''}</div></div>` : ''}`;
+}
+
 // ---------- esdeveniments ----------
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act, D = el.dataset;
   if (a === 'close-ov') { if (e.target === el) closeModal(); return; }
-  if (['search', 'instr', 'cscore', 'cnote', 'cnext', 'packp', 'packon', 'quotes', 'method', 'cabs', 'xs', 'pol'].includes(a)) return;
+  if (['search', 'instr', 'cscore', 'cnote', 'cnext', 'packp', 'packon', 'quotes', 'method', 'cabs', 'xs', 'pol', 'rate', 'liqm', 'imp-f', 'imp-t'].includes(a)) return;
   if (a === 'bell') return bellModal();
   if (a === 'brand-n') return;
   if (a === 'brand-c') { S.brand.c = D.c; applyBrand(); save(); render(); toast('Color actualitzat'); return; }
@@ -1151,7 +1354,7 @@ document.addEventListener('click', e => {
   if (a === 'notif-go') { closeModal(); ui.page = D.p; if (D.th) ui.thread = D.th; render(); window.scrollTo(0, 0); return; }
   if (a === 'copy') { navigator.clipboard?.writeText(D.v); toast('Codi copiat'); return; }
   if (a === 'report') { downloadReport(D.id); toast('Informe descarregat'); return; }
-  if (a === 'csv') { exportCsv(({ stu: 'alumnes', pay: 'pagaments', ex: 'examens' })[D.k] + '.csv', csvFor(D.k)); toast('CSV descarregat'); return; }
+  if (a === 'csv') { exportCsv(({ stu: 'alumnes', pay: 'pagaments', ex: 'examens', liq: 'liquidacio', veh: 'vehicles' })[D.k] + '.csv', csvFor(D.k)); toast('CSV descarregat'); return; }
   if (a === 'suggest') {
     const p = suggestHours(S.me); if (!p.length) return toast('No hem trobat hores lliures els propers dies');
     ui.picks = p; const [d] = p[0].split('|'); ui.cal.sel = d; ui.cal.m = new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, 1);
@@ -1270,6 +1473,33 @@ document.addEventListener('click', e => {
     case 'addcarnet-ok': { const s = stu(D.id), p = $('#ac').value; if (!p) return; S.stu.push({ id: 's' + nid(), pid: s.pid, n: s.n, tel: s.tel, mail: s.mail, alta: iso(today0()), p, bo: 0, ref: s.ref }); save(); closeModal(); render(); toast(`Carnet ${PERM(p).n} afegit a ${s.n}`); break; }
     case 'newstu': modal(`<h2>Nova matrícula</h2><div class="field"><label for="n1">Nom i cognoms</label><input id="n1"></div><div class="field"><label for="n4">Carnet</label><select id="n4">${PERMITS.map(p => `<option value="${p.k}" ${p.k === 'B' ? 'selected' : ''}>${p.n} · ${p.d}</option>`).join('')}</select></div><div class="field"><label for="n2">Telèfon</label><input id="n2" inputmode="tel"></div><div class="field"><label for="n3">Correu</label><input id="n3" type="email"></div><div class="acts"><button class="btn" data-act="close">Cancel·lar</button><button class="btn pri" data-act="newstu-ok">Crear alumne</button></div>`); break;
     case 'newstu-ok': { const n = $('#n1').value.trim(); if (!n) return toast('Falta el nom'); const id = 's' + nid(); S.stu.push({ id, pid: 'P' + id, n, p: $('#n4').value, tel: $('#n2').value, mail: $('#n3').value, alta: iso(today0()), bo: 0, ref: n.split(' ')[0].toUpperCase().normalize('NFD').replace(/[^A-Z]/g, '') + '25' }); save(); closeModal(); render(); toast('Alumne creat'); break; }
+    case 'reas': reasModal(); break;
+    case 'reas-ok': {
+      const from = $('#ri').value, d1 = $('#r1').value, d2 = $('#r2').value, block = $('#rb').checked;
+      if (!d1 || !d2 || d2 < d1) return toast('Revisa el període: la data final no pot ser anterior a la inicial');
+      if (block && (new Date(d2) - new Date(d1)) / 864e5 > 90) return toast('El bloqueig està limitat a 90 dies');
+      const n = lessonsToMove(from, d1, d2).length;
+      if (!n && !block) return toast('Aquest professor no té classes reservades en aquest període');
+      if (n && !confirm(`Es reassignaran fins a ${n} ${n === 1 ? 'classe' : 'classes'} de ${ins(from).n} i s'avisarà els alumnes. Vols continuar?`)) return;
+      const r = reassign(from, d1, d2, block); save(); render(); reasResult(from, r); break;
+    }
+    case 'imp': impModal(); break;
+    case 'imp-tpl': download('plantilla-alumnes.csv', 'text/csv;charset=utf-8', '\uFEFFNom;Carnet;Telèfon;Correu\r\nMaria Pons;B;612345678;maria@example.com\r\nJoan Vidal;A2;698765432;joan@example.com\r\n'); toast('Plantilla descarregada'); break;
+    case 'imp-ok': {
+      const r = impParse($('#imp-t').value); if (!r.rows.length) return toast('No hi ha cap fila vàlida per importar');
+      r.rows.forEach(x => { const id = 's' + nid(); S.stu.push({ id, pid: 'P' + id, n: x.n, p: x.p, tel: x.tel, mail: x.mail, alta: iso(today0()), bo: 0, ref: x.n.split(' ')[0].toUpperCase().normalize('NFD').replace(/[^A-Z]/g, '') + '25' }); });
+      save(); closeModal(); render(); toast(`${r.rows.length} ${r.rows.length === 1 ? 'alumne importat' : 'alumnes importats'}`); break;
+    }
+    case 'veh-new': vehModal(''); break;
+    case 'veh-edit': vehModal(D.id); break;
+    case 'veh-ok': {
+      const n = $('#vn').value.trim(); if (!n) return toast('Falta el nom del vehicle');
+      const f = { n, plate: $('#vp').value.trim(), km: Math.max(0, +$('#vk').value || 0), itv: $('#vi').value, seg: $('#vs').value, rev: $('#vr').value };
+      if (!f.itv || !f.seg || !f.rev) return toast('Cal indicar les tres dates');
+      if (D.id) Object.assign(S.cars.find(x => x.id === D.id), f); else S.cars.push({ id: 'c' + nid(), ...f });
+      save(); closeModal(); render(); toast('Vehicle desat'); break;
+    }
+    case 'veh-del': { const c = S.cars.find(x => x.id === D.id); if (carUsers(c).length) return toast('Aquest vehicle està assignat a un professor: canvia-ho primer a Professors'); if (!confirm('Eliminar aquest vehicle?')) return; S.cars = S.cars.filter(x => x.id !== D.id); save(); closeModal(); render(); toast('Vehicle eliminat'); break; }
     case 'payf': ui.payFilter = D.k; render(); break;
     case 'paid': applyPaid(P()); save(); render(); toast('Cobrament registrat'); break;
     case 'remind': toast(`Recordatori enviat a ${stu(P().s).n} (simulat)`); break;
@@ -1350,6 +1580,7 @@ document.addEventListener('input', e => {
   else if (a === 'cscore') { ui.close.score = +e.target.value; $('#cscv').textContent = e.target.value; }
   else if (a === 'cnote') ui.close.note = e.target.value;
   else if (a === 'cnext') ui.close.next = e.target.value;
+  else if (a === 'imp-t') impPreview();
 });
 document.addEventListener('change', e => {
   const a = e.target.dataset.act, D = e.target.dataset;
@@ -1362,6 +1593,14 @@ document.addEventListener('change', e => {
   else if (a === 'pol') { S.policy.find(x => x.h == D.h).pct = Math.max(0, Math.min(100, +e.target.value || 0)); save(); render(); toast('Política actualitzada'); }
   else if (a === 'quotes') { ui.co.quotes = +e.target.value; checkoutModal(); }
   else if (a === 'method') { ui.co.method = e.target.value; }
+  else if (a === 'liqm') { ui.liqM = e.target.value; render(); }
+  else if (a === 'rate') { ins(D.id).rate = Math.max(0, +e.target.value || 0); save(); render(); toast('Tarifa actualitzada'); }
+  else if (a === 'imp-f') {
+    const f = e.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => { let t = String(rd.result); if (t.includes('\uFFFD')) { const r2 = new FileReader(); r2.onload = () => { $('#imp-t').value = String(r2.result); impPreview(); }; r2.readAsText(f, 'windows-1252'); return; } $('#imp-t').value = t; impPreview(); };
+    rd.readAsText(f);
+  }
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
