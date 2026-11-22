@@ -344,7 +344,7 @@ function seed() {
   };
 }
 
-const KEY = 'ruta-autoescola-v5';
+const KEY = window.APP_KEY || 'ruta-autoescola-v5';
 let S = (() => { try { return JSON.parse(localStorage.getItem(KEY)) || seed(); } catch { return seed(); } })();
 try { const tb = JSON.parse(sessionStorage.getItem('vial-tab') || 'null'); if (tb) Object.assign(S, tb); } catch { }
 const save = () => { try { sessionStorage.setItem('vial-tab', JSON.stringify({ role: S.role, me: S.me, meI: S.meI })); } catch { } localStorage.setItem(KEY, JSON.stringify(S)); };
@@ -386,7 +386,7 @@ const ui = { page: null, weekOff: 0, instr: 'all', vid: 'v5', fake: 0, timer: nu
 const NAV = {
   alumne: [['inici', 'Inici', 'home'], ['practiques', 'Pràctiques', 'cal'], ['temari', 'Temari', 'book'], ['classes', 'Vídeos', 'video'], ['tests', 'Tests', 'test'], ['examens', 'Exàmens', 'flag'], ['tramits', 'Tràmits', 'doc'], ['pagaments', 'Pagaments', 'card'], ['tarifes', 'Preus i packs', 'chart'], ['carnets', 'Més carnets', 'plus'], ['assistencia', 'Assistència', 'msg']],
   prof: [['avui', 'Avui', 'home'], ['agenda', 'Agenda', 'cal'], ['alumnes', 'Alumnes', 'users'], ['examens', 'Exàmens', 'flag'], ['assistencia', 'Assistència', 'msg']],
-  admin: [['resum', 'Resum', 'chart'], ['embuts', 'Fases i embuts', 'chart'], ['agenda', 'Agenda', 'cal'], ['disponibilitat', 'Disponibilitat', 'clock'], ['preinscripcions', 'Preinscripcions', 'plus'], ['alumnes', 'Alumnes', 'users'], ['profs', 'Professors', 'award'], ['vehicles', 'Vehicles', 'car'], ['examens', 'Exàmens', 'flag'], ['tramits', 'Tràmits', 'doc'], ['absencies', 'Avisos d\'absència', 'info'], ['pagaments', 'Pagaments', 'card'], ['liquidacio', 'Liquidació', 'chart'], ['assistencia', 'Assistència', 'msg'], ['videos', 'Vídeos', 'video'], ['config', 'Configuració', 'cog']],
+  admin: [['resum', 'Resum', 'chart'], ['embuts', 'Fases i embuts', 'chart'], ['agenda', 'Agenda', 'cal'], ['disponibilitat', 'Disponibilitat', 'clock'], ['preinscripcions', 'Preinscripcions', 'plus'], ['alumnes', 'Alumnes', 'users'], ['profs', 'Professors', 'award'], ['vehicles', 'Vehicles', 'car'], ['examens', 'Exàmens', 'flag'], ['tramits', 'Tràmits', 'doc'], ['documents', 'Documents', 'doc'], ['absencies', 'Avisos d\'absència', 'info'], ['pagaments', 'Pagaments', 'card'], ['liquidacio', 'Liquidació', 'chart'], ['assistencia', 'Assistència', 'msg'], ['automatitzacions', 'Automatitzacions', 'clock'], ['videos', 'Vídeos', 'video'], ['config', 'Configuració', 'cog']],
 };
 function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('show'), 2800); }
 function modal(html, wide) {
@@ -498,7 +498,9 @@ function notifs() {
     S.stu.filter(s => readiness(s.id).ok && !nextExam(s.id) && trv(s.id, 'practic') !== 'ok').forEach(s => out.push({ k: 'rd' + s.id, t: `${s.n} (${PERM(s.p).n}) està llest per a l'examen`, x: 'Cal apuntar-lo a examen', go: 'examens' }));
     S.msgs.filter(m => m.from === 'alumne' && m.ts > recent).forEach(m => out.push({ k: 'n' + m.id, t: `${stu(m.s).n}: ${m.t}`, x: fmtTs(m.ts), go: 'examens' }));
   }
-  return out.filter(n => !S.dis.includes(n.k));
+  const GO = { today: 'avui', students: 'alumnes', docs: 'tramits', pay: 'pagaments', classes: 'practiques', guide: 'inici', exams: 'examens', chat: 'assistencia', inbox: 'inici' };
+  const ntItems = ntOf(recipKey()).filter(n => !n.r).slice(0, 12).map(n => ({ k: 'nt' + n.id, t: n.t, x: n.b, go: GO[n.go] || n.go || 'inici' }));
+  return out.concat(ntItems).filter(n => !S.dis.includes(n.k));
 }
 function bellModal() {
   const ns = notifs();
@@ -541,10 +543,10 @@ const head = (t, s, extra = '') => `<div class="page-h row between wrap"><div><h
 const VIEWS = () => ({
   alumne: { inici: vInici, practiques: vPractiques, temari: vTemari, classes: vClasses, tests: vTests, examens: vExams, tramits: vTramits, pagaments: vPagaments, tarifes: vTarifes, carnets: vCarnets, assistencia: vAssist },
   prof: { avui: vAvui, agenda: vAgenda, alumnes: vAlumnes, examens: vExamsStaff, assistencia: vAssist },
-  admin: { resum: vResum, embuts: vEmbuts, agenda: vAgenda, disponibilitat: vDisp, preinscripcions: vPre, alumnes: vAlumnes, profs: vProfs, vehicles: vVeh, examens: vExamsStaff, tramits: vTramitsAdmin, absencies: vAbs, pagaments: vPagAdmin, liquidacio: vLiq, assistencia: vAssist, videos: vVideosAdmin, config: vConfig },
+  admin: { resum: vResum, embuts: vEmbuts, agenda: vAgenda, disponibilitat: vDisp, preinscripcions: vPre, alumnes: vAlumnes, profs: vProfs, vehicles: vVeh, examens: vExamsStaff, tramits: vTramitsAdmin, absencies: vAbs, pagaments: vPagAdmin, liquidacio: vLiq, assistencia: vAssist, documents: vDocs, automatitzacions: vAuto, videos: vVideosAdmin, config: vConfig },
 })[S.role];
 
-const LOGGED = () => { try { return sessionStorage.getItem('vial-in') === '1'; } catch { return true; } };
+const LOGGED = () => { try { return sessionStorage.getItem('vial-in') === '1' || (!!window.APP_MODE && localStorage.getItem('vial-in') === '1'); } catch { return true; } };
 function renderLogin() {
   const P = [['alumne', 'Alumne', 'Laia Roca', 'Reserves, temari, pagaments i exàmens'], ['prof', 'Professor', 'Jordi Puig', 'Agenda, registre de classes i alumnes'], ['admin', 'Autoescola', 'Anna Bosch', 'Gestió completa del centre']];
   $('#app').innerHTML = `<div class="login">
@@ -554,6 +556,8 @@ function renderLogin() {
     ${wl() ? '' : '<a class="lg-back" href="index.html">← Tornar a la presentació</a>'}</div></section></div>`;
 }
 function render() {
+  if (typeof isApp === 'function' && isApp() && !(LOGGED() && S.role === 'admin')) { document.body.classList.add('appmode'); return LOGGED() ? renderApp() : renderAppLogin(); }
+  document.body.classList.remove('appmode');
   if (!LOGGED()) return renderLogin();
   const nav = NAV[S.role].filter(n => S.mods[n[0]] !== false);
   if (isAdmin()) syncPre();
@@ -578,7 +582,7 @@ function render() {
   const GROUP = {
     alumne: { inici: 'Resum', practiques: 'Formació', examens: 'Tràmits', pagaments: 'Compte', assistencia: 'Ajuda' },
     prof: { avui: 'Activitat', alumnes: 'Gestió', assistencia: 'Ajuda' },
-    admin: { resum: 'General', embuts: 'Anàlisi', agenda: 'Planificació', preinscripcions: 'Gestió', pagaments: 'Economia', assistencia: 'Atenció', videos: 'Contingut', config: 'Sistema' },
+    admin: { resum: 'General', embuts: 'Anàlisi', agenda: 'Planificació', preinscripcions: 'Gestió', pagaments: 'Economia', assistencia: 'Atenció', automatitzacions: 'Automatització', videos: 'Contingut', config: 'Sistema' },
   }[S.role];
   const cur = nav.find(n => n[0] === ui.page);
   $('#app').innerHTML = `
@@ -595,7 +599,7 @@ function render() {
         ${isAdmin() || isProf() ? '<div class="gs"><input id="gs" data-act="gs" type="search" placeholder="Cerca alumne o professor" autocomplete="off" aria-label="Cerca"><div id="gs-r" class="gs-r"></div></div>' : ''}
         <div class="tb-r">
           ${enr.length > 1 ? `<div class="seg" role="group" aria-label="Carnet en curs">${enr.map(x => `<button data-act="enr" data-id="${x.id}" class="${x.id === S.me ? 'on' : ''}">Carnet ${PERM(x.p).n}</button>`).join('')}</div>` : ''}
-          <label class="tb-l">Perfil de demostració</label>
+          ${isAdmin() ? '' : '<button class="btn sm" data-act="appmode">Mode app</button>'}<label class="tb-l">Perfil de demostració</label>
           <div class="seg" role="group" aria-label="Canvia de perfil">${[['alumne', 'Alumne'], ['prof', 'Professor'], ['admin', 'Autoescola']].map(r => `<button data-act="role" data-r="${r[0]}" class="${S.role === r[0] ? 'on' : ''}">${r[1]}</button>`).join('')}</div>
           <button class="bell" data-act="bell" aria-label="Avisos">${ic('bell')}${nn ? `<i>${nn}</i>` : ''}</button>
         </div>
@@ -605,6 +609,7 @@ function render() {
     </div>
   </div>`;
   if (ui.page !== 'classes') fakePlayerSync();
+  try { ntCheck(); } catch { }
   const cl = document.querySelector('.chat-list'); if (cl) cl.scrollTop = cl.scrollHeight;
 }
 function fakePlayerSync() { if (ui.timer) { clearInterval(ui.timer); ui.timer = null; } }
@@ -812,7 +817,7 @@ function downloadInvoice(x) {
 }
 
 // ----- missatges (alumne, professor i autoescola) -----
-function say(sid, t, from, f) { S.msgs.push({ id: nid(), s: sid, from, f, t, ts: Date.now() }); }
+function say(sid, t, from, f) { S.msgs.push({ id: nid(), s: sid, from, f, t, ts: Date.now() }); try { notifySay(sid, t, from, f); } catch { } }
 
 // ---------- PROFESSOR ----------
 function lessonRow(l) {
@@ -997,7 +1002,7 @@ function vConfig() {
   <div class="card" style="margin-bottom:16px"><div class="card-h"><h2>Marca de l'autoescola</h2><span class="muted sm">Els alumnes i professors veuran el vostre nom i color</span></div>
   <div class="grid g2"><div><div class="field"><label for="bn">Nom de l'autoescola</label><input id="bn" data-act="brand-n" value="${esc(S.brand.name)}" maxlength="40"></div><label>Color principal</label><div class="swatches">${BRAND_COLORS.map(c => `<button class="swatch ${S.brand.c === c[1] ? 'on' : ''}" style="background:${c[1]}" data-act="brand-c" data-c="${c[1]}" aria-label="${c[0]}" title="${c[0]}"></button>`).join('')}</div><label class="chk-row" style="margin-top:14px"><input type="checkbox" data-act="brand-wl" ${wl() ? 'checked' : ''} style="width:auto;min-height:0"> Mostrar la meva marca en lloc de Vial</label></div>
   <div><label>Vista prèvia</label><div class="brand-prev">${wl() ? `<div class="logo wl" style="color:#fff">${logoHtml()}</div>` : `${LOGO}<div><b>Vial</b><div class="sm" style="color:#9aa6b2">${esc(S.brand.name)}</div></div>`}<span class="pill" style="margin-left:auto;background:var(--accent);color:#fff">Botó principal</span></div></div></div></div>
-  ${modsCard()}
+  ${modsCard()}${cfgCard()}
   <div class="card" style="margin-bottom:16px"><div class="card-h"><h2>Política de cancel·lacions</h2><span class="muted sm">Percentatge del preu de la classe que es cobra segons l'antelació</span></div><div class="grid g4">${S.policy.slice().sort((x, y) => y.h - x.h).map((x, i, arr) => `<div class="field"><label>${i === 0 ? x.h + ' h o més' : x.h === 0 ? 'Menys de ' + arr[i - 1].h + ' h' : x.h + '–' + arr[i - 1].h + ' h'}</label><div class="row"><input type="number" min="0" max="100" value="${x.pct}" data-act="pol" data-h="${x.h}" aria-label="Percentatge"><span class="muted">%</span></div></div>`).join('')}</div></div>
   <div class="chips">${PERMITS.map(p => `<button class="chip ${ui.cfgP === p.k ? 'on' : ''}" data-act="cfgp" data-k="${p.k}">${p.n}</button>`).join('')}</div>
   <div class="card flush scroll-x" style="margin-bottom:16px"><div class="card-h" style="padding:20px 24px 0"><h2>Packs del carnet ${P.n} · ${P.d}</h2><div class="row"><span class="muted sm">Preu hora: ${eur(P.h)}</span><button class="btn sm" data-act="newpack">${ic('plus')} Nou pack</button></div></div><table><thead><tr><th>Pack</th><th>Hores</th><th>Preu (€)</th><th>€/hora</th><th>Estalvi alumne</th><th>Visible</th><th></th></tr></thead><tbody>
@@ -1650,11 +1655,11 @@ document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act, D = el.dataset;
   if (a === 'close-ov') { if (e.target === el) closeModal(); return; }
-  if (['search', 'instr', 'cscore', 'cnote', 'cnext', 'packp', 'packon', 'quotes', 'method', 'cabs', 'xs', 'pol', 'rate', 'liqm', 'imp-f', 'imp-t', 'gs', 'brand-wl', 'mod'].includes(a)) return;
+  if (['search', 'instr', 'cscore', 'cnote', 'cnext', 'packp', 'packon', 'quotes', 'method', 'cabs', 'xs', 'pol', 'rate', 'liqm', 'imp-f', 'imp-t', 'gs', 'brand-wl', 'mod', 'auto-t', 'cfg'].includes(a)) return;
   if (a === 'bell') return bellModal();
   if (a === 'brand-n') return;
   if (a === 'brand-c') { S.brand.c = D.c; applyBrand(); save(); render(); toast('Color actualitzat'); return; }
-  if (a === 'notif-clear') { notifs().forEach(n => S.dis.push(n.k)); save(); closeModal(); render(); toast('Avisos marcats com a llegits'); return; }
+  if (a === 'notif-clear') { ntRead(recipKey()); notifs().forEach(n => S.dis.push(n.k)); save(); closeModal(); render(); toast('Avisos marcats com a llegits'); return; }
   if (a === 'notif-go') { closeModal(); ui.page = D.p; if (D.th) ui.thread = D.th; render(); window.scrollTo(0, 0); return; }
   if (a === 'copy') { navigator.clipboard?.writeText(D.v); toast('Codi copiat'); return; }
   if (a === 'report') { downloadReport(D.id); toast('Informe descarregat'); return; }
@@ -1672,7 +1677,7 @@ document.addEventListener('click', e => {
   }
   if (a === 'live') {
     const l = S.les.find(x => x.id == D.id), nx = LIVE_NEXT[(S.live[l.id] || {}).st || 'none'];
-    S.live[l.id] = { st: nx, ts: Date.now() }; if (LIVE[nx].msg) say(l.s, LIVE[nx].msg, 'prof', nameOf());
+    S.live[l.id] = { st: nx, ts: Date.now() }; if (LIVE[nx].msg) say(l.s, LIVE[nx].msg, 'prof', nameOf()); else notify(nkey.alu(l.s), 'La classe ha començat', `${ins(l.i).n} · ${S.cfg.classMin} minuts`, { ic: 'clock', go: 'inbox' });
     save(); render(); toast(nx === 'curs' ? 'Classe començada' : 'Avís enviat a l\'alumne'); return;
   }
   if (el.tagName === 'A') e.preventDefault();
@@ -1681,8 +1686,8 @@ document.addEventListener('click', e => {
     case 'close': closeModal(); break;
     case 'reset': if (confirm('Restablir totes les dades de mostra?')) { localStorage.removeItem(KEY); location.reload(); } break;
     case 'go': closeModal(); ui.page = D.p; if (D.p === 'classes') ui.fake = 0; render(); window.scrollTo(0, 0); break;
-    case 'login': try { sessionStorage.setItem('vial-in', '1'); } catch {} S.role = D.r; ui.page = null; ui.instr = D.r === 'alumne' ? 'all' : D.r === 'prof' ? S.meI : S.instr[0].id; save(); render(); window.scrollTo(0, 0); break;
-    case 'logout': try { sessionStorage.removeItem('vial-in'); } catch {} closeModal(); render(); window.scrollTo(0, 0); break;
+    case 'login': try { sessionStorage.setItem('vial-in', '1'); if (window.APP_MODE) localStorage.setItem('vial-in', '1'); } catch {} S.role = D.r; ui.page = null; ui.instr = D.r === 'alumne' ? 'all' : D.r === 'prof' ? S.meI : S.instr[0].id; save(); render(); window.scrollTo(0, 0); break;
+    case 'logout': try { sessionStorage.removeItem('vial-in'); localStorage.removeItem('vial-in'); } catch {} closeModal(); render(); window.scrollTo(0, 0); break;
     case 'role': S.role = D.r; ui.page = null; ui.instr = D.r === 'alumne' ? 'all' : D.r === 'prof' ? S.meI : S.instr[0].id; ui.thread = null; save(); render(); break;
     case 'enr': S.me = D.id; ui.instr = 'all'; ui.quiz = null; ui.vid = null; ui.picks = []; if (D.go) ui.page = D.go; save(); render(); break;
     case 'week': ui.weekOff = +D.n === 0 ? 0 : ui.weekOff + +D.n; render(); break;
@@ -1705,7 +1710,7 @@ document.addEventListener('click', e => {
     case 'mine-pt': { const l = L(); l.pt = $('#mp').value; say(me.id, `He canviat el punt de trobada del ${fmtData(l.d)} a les ${p2(l.h)}:00: ${l.pt}`, 'alumne', me.n); save(); closeModal(); render(); toast('Punt de trobada actualitzat i professor avisat'); break; }
     case 'cancel': {
       const l = L(), ci = cancelInfo(l), r = $('#nr') ? $('#nr').value : 'Altres', nt = $('#nn') ? $('#nn').value.trim() : '';
-      l.st = 'cancel·lada'; l.na = { r, note: nt, ts: Date.now(), hrs: ci.hrs, pct: ci.pct, st: 'pendent' }; me.bo++;
+      l.st = 'cancel·lada'; l.na = { r, note: nt, ts: Date.now(), hrs: ci.hrs, pct: ci.pct, st: 'pendent' }; me.bo++; notify([nkey.prof(l.i), 'adm'], `${me.n} no pot assistir`, `${fmtData(l.d)} a les ${p2(l.h)}:00 · ${r}`, { ic: 'info', go: 'today' });
       say(me.id, `No podrà assistir a la pràctica del ${fmtData(l.d)} a les ${p2(l.h)}:00 (${r}).`, 'alumne', me.n);
       notifyWait(l.d, l.h); save(); closeModal(); render();
       toast('Avís enviat. L\'hora queda lliure i la pràctica torna al teu bo'); break;
@@ -1722,7 +1727,7 @@ document.addEventListener('click', e => {
     case 'seen': markSeen(D.id); break;
     case 'quiz-start': ui.quiz = { qs: quizFor(me.id), i: 0, ans: [], fi: false }; render(); break;
     case 'ans': { const q = ui.quiz; q.ans.push(+D.i); q.i++; if (q.i >= q.qs.length) { q.fi = true; q.score = q.ans.filter((x, k) => x === q.qs[k].a).length; (S.tests[me.id] = S.tests[me.id] || []).push({ d: iso(today0()), n: q.score, of: q.qs.length }); save(); } render(); break; }
-    case 'upload': (S.tr[me.id] = S.tr[me.id] || {})[D.k] = 'revisio'; save(); render(); toast('Document pujat. L\'autoescola el revisarà'); break;
+    case 'upload': docUpload(me.id, D.k, { name: 'document.jpg', size: 150000, issued: D.k === 'metge' ? iso(today0()) : '' }); render(); toast('Document pujat. L\'autoescola el revisarà'); break;
     // --- pagaments
     case 'checkout': ui.co = { id: D.id, coupon: '', quotes: 1, method: 'Targeta' }; checkoutModal(); break;
     case 'coupon': ui.co.coupon = $('#cc').value.trim(); checkoutModal(); break;
@@ -1749,7 +1754,7 @@ document.addEventListener('click', e => {
     case 'sk': { const c = ui.close; c.sk[D.k] = +D.v; c.touched[D.k] = true; const sc = $('.modal').scrollTop; closeModal2(); $('.modal').scrollTop = sc; break; }
     case 'close-save': {
       const c = ui.close, l = S.les.find(x => x.id === c.id), s = stu(l.s);
-      delete S.live[l.id];
+      delete S.live[l.id]; notify(nkey.alu(l.s), c.absent ? 'Classe marcada com a no presentat' : `Classe registrada: ${c.score}/10`, c.absent ? 'La pràctica s\'ha consumit.' : (c.note || 'Ja tens la nota al teu temari.'), { ic: 'check', go: 'guide' });
       if (c.absent) { l.st = 'absent'; l.note = 'No presentat'; }
       else { l.st = 'feta'; l.score = c.score; l.note = c.note.trim(); l.next = c.next.trim(); l.sk = {}; Object.keys(c.touched).forEach(k => { l.sk[k] = c.sk[k]; }); S.skl[s.id] = { ...(S.skl[s.id] || {}), ...l.sk }; }
       save(); closeModal(); render(); toast(c.absent ? 'Marcat com a no presentat' : `Classe registrada · ${s.n.split(' ')[0]} ho veurà al seu temari`); break;
@@ -1758,7 +1763,7 @@ document.addEventListener('click', e => {
     case 'chpt-ok': { const l = L(), v = $('#po').value.trim() || $('#pp').value; l.pt = v; say(l.s, `Canvi de punt de trobada per al ${fmtData(l.d)} a les ${p2(l.h)}:00: ${v}`, isAdmin() ? 'admin' : 'prof', nameOf()); save(); closeModal(); render(); toast('Punt actualitzat i alumne avisat'); break; }
     // --- agenda i alumnes (professor/autoescola)
     case 'tr-cycle': { const c = ['pendent', 'revisio', 'ok'], t = (S.tr[D.s] = S.tr[D.s] || {}); t[D.k] = c[(c.indexOf(trv(D.s, D.k)) + 1) % 3]; save(); render(); break; }
-    case 'tr-set': (S.tr[D.s] = S.tr[D.s] || {})[D.k] = D.v; save(); render(); toast('Tràmit validat'); break;
+    case 'tr-set': (S.tr[D.s] = S.tr[D.s] || {})[D.k] = D.v; if (S.docs[D.s] && S.docs[D.s][D.k]) S.docs[D.s][D.k].st = D.v === 'ok' ? 'ok' : 'revisio'; notify(nkey.alu(D.s), 'Tràmit validat', TRD[D.k].l, { ic: 'check', go: 'guide' }); save(); render(); toast('Tràmit validat'); break;
     case 'alesson': lessonModal(L()); break;
     case 'alcancel': { const l = L(); l.st = 'cancel·lada'; stu(l.s).bo++; notifyWait(l.d, l.h); save(); closeModal(); render(); toast('Pràctica cancel·lada i retornada al bo'); break; }
     case 'aassign': assignModal(D.d, +D.h); break;
@@ -1819,7 +1824,7 @@ document.addEventListener('click', e => {
     case 'chat-send': {
       const inp = $('#chat-in'), t = inp.value.trim(); if (!t) return toast('Escriu un missatge');
       const th = isAdmin() ? ui.th : thKey(); if (!th) return;
-      S.chat.push({ id: nid(), th, from: isAdmin() ? 'a' : 'u', n: nameOf(), t, ts: Date.now() }); S.cseen[seenKey(th)] = Date.now(); save(); render();
+      S.chat.push({ id: nid(), th, from: isAdmin() ? 'a' : 'u', n: nameOf(), t, ts: Date.now() }); notify(isAdmin() ? (ins(th) ? nkey.prof(th) : 'alu:' + th) : 'adm', nameOf(), t, { ic: 'chat', go: 'assistencia' }); S.cseen[seenKey(th)] = Date.now(); save(); render();
       const ni = $('#chat-in'); if (ni) ni.focus(); break;
     }
     case 'absf': ui.absF = D.k; render(); break;
@@ -1874,7 +1879,7 @@ document.addEventListener('click', e => {
       ui.picks.slice().sort().forEach(k => {
         const [d, hs] = k.split('|'), h = +hs, free = freeInstr(me.p, ui.instr, d, h);
         if (me.bo <= 0 || !free.length || stBusy(me.id, d, h)) { skipped++; return; }
-        S.les.push({ id: nid(), s: me.id, i: free[0].id, d, h, st: 'reservada', pt }); me.bo--; made++;
+        S.les.push({ id: nid(), s: me.id, i: free[0].id, d, h, st: 'reservada', pt }); me.bo--; made++; notify([nkey.prof(free[0].id), 'adm'], 'Nova reserva', `${me.n} · ${fmtData(d)} a les ${p2(h)}:00`, { ic: 'cal', go: 'today' });
         S.wait = S.wait.filter(w => !(w.s === me.id && w.d === d && w.h === h));
       });
       ui.picks = []; save(); render();
@@ -1956,7 +1961,7 @@ function markSeen(id) {
   const a = (S.seen[S.me] = S.seen[S.me] || []); if (!a.includes(id)) a.push(id);
   save(); ui.fake = 100; render(); toast('Classe marcada com a vista');
 }
-render();
+if (!window.DEFER_BOOT) render();
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
 window.addEventListener('storage', e => {
   if (e.key !== KEY || !e.newValue) return;
