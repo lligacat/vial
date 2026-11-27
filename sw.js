@@ -1,5 +1,5 @@
 // Service worker mínim: xarxa primer, i còpia local si no hi ha connexió.
-const C = 'vial-v3';
+const C = 'vial-v5';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(k => Promise.all(k.filter(x => x !== C).map(x => caches.delete(x)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => {

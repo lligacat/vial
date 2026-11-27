@@ -4,113 +4,35 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Inscripció · Autoescola Bages</title>
-<meta name="theme-color" content="#12161c">
+<meta name="theme-color" content="#05070a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2312202f' fill-rule='evenodd' d='M0 0H32V32H0Z M8 8H12.4L16 17L19.6 8H24L18 24H14Z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="landing.css">
 <style>
-.enr{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:64px;padding:72px 0 96px;align-items:start}
-.enr h1{font-size:46px;line-height:1.06;font-weight:500;letter-spacing:-.03em}
-.enr .lead{font-size:17px}
-.enr ul{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:12px;color:var(--ink2);font-size:15px}
-.enr li{position:relative;padding-left:20px}.enr li::before{content:'';position:absolute;left:0;top:.7em;width:9px;height:1.5px;background:var(--ink)}
-.box{border:1px solid var(--line);border-radius:6px;padding:32px;background:#fff}
-.box h2{font-size:20px;font-weight:600;margin-bottom:4px}
-.box>p{color:var(--mute);font-size:14px;margin-bottom:22px}
-.f{margin-bottom:14px}.f label{display:block;font-size:13px;font-weight:500;margin-bottom:5px;color:var(--ink2)}
-.f input,.f select,.f textarea{width:100%;font:inherit;font-size:15px;padding:11px 12px;border:1px solid #c9cfd7;border-radius:4px;background:#fff;color:var(--ink)}
-.f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--ink);outline-offset:-1px;border-color:var(--ink)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.price{background:var(--alt);border:1px solid var(--line);border-radius:4px;padding:12px 14px;font-size:14px;color:var(--ink2);margin-bottom:14px}
-.price b{color:var(--ink)}
-.chk{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--ink2);margin:6px 0 20px}.chk input{margin-top:3px;width:auto}
-.err{color:#b3261e;font-size:13px;margin:-6px 0 12px;display:none}
-.done{display:none;text-align:left}
-.done h2{font-size:24px;margin-bottom:8px}
-.demo-n{font-size:12.5px;color:var(--mute);margin-top:16px}
-@media(max-width:900px){.enr{grid-template-columns:1fr;gap:36px;padding:40px 0 64px}.enr h1{font-size:34px}.two{grid-template-columns:1fr}.box{padding:22px}}
+.topnav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:76px;padding:0 var(--pad);border-bottom:1px solid var(--line-s)}
+.topnav .pills{flex-wrap:nowrap;gap:8px}
+.enr{padding:clamp(48px,7vw,96px) var(--pad) var(--sec);min-height:70vh}
+.enr .head h1{font-size:clamp(28px,3.8vw,54px);line-height:1.1;text-wrap:balance}
+.end{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:26px var(--pad);border-top:1px solid var(--line);font-size:12.5px;color:var(--mute)}
+@media(max-width:420px){.topnav .brand span{display:none}}
 </style>
 </head>
 <body>
-<header class="nav">
-  <div class="wrap nav-in">
-    <a class="brand" href="index.html" aria-label="Vial">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>
-      <span>VIAL</span>
-    </a>
-    <nav aria-label="Seccions"><a href="index.html">Presentació</a></nav>
-    <a class="btn dark" href="app.html">Accedir</a>
-  </div>
+<header class="topnav">
+  <a class="brand" href="index.html" aria-label="Vial"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg><span>VIAL</span></a>
+  <div class="pills"><a class="pill pill--small pill--ghost" href="index.html">Presentació</a><a class="pill pill--small" href="app.html">Accedir</a></div>
 </header>
 
-<main class="wrap enr">
-  <section>
-    <p class="kicker">Autoescola Bages</p>
-    <h1>Inscriu-te a l'autoescola en pocs minuts.</h1>
-    <p class="lead">Omple el formulari i l'autoescola es posarà en contacte amb tu per confirmar la matrícula, el preu i les primeres classes. No cal pagar res ara.</p>
-    <ul>
-      <li>Tots els permisos: moto, cotxe, camió, autobús i remolc</li>
-      <li>Reserva les pràctiques des del calendari de l'aplicació</li>
-      <li>Teoria en vídeo, tests i seguiment del teu progrés</li>
-      <li>Pagament del carnet complet o per packs de pràctiques</li>
-    </ul>
-  </section>
-
-  <section class="box" aria-live="polite">
-    <form id="f" novalidate>
-      <h2>Sol·licitud d'inscripció</h2>
-      <p>Les dades només s'utilitzen per contactar amb tu.</p>
-      <div class="f"><label for="n">Nom i cognoms</label><input id="n" autocomplete="name" required></div>
-      <div class="two">
-        <div class="f"><label for="t">Telèfon</label><input id="t" type="tel" autocomplete="tel" required></div>
-        <div class="f"><label for="m">Correu electrònic</label><input id="m" type="email" autocomplete="email" required></div>
-      </div>
-      <div class="f"><label for="p">Permís que vols obtenir</label><select id="p"></select></div>
-      <div class="price" id="price"></div>
-      <div class="f"><label for="fr">Franja horària preferida</label><select id="fr"><option>Indiferent</option><option>Matins</option><option>Tardes</option></select></div>
-      <div class="f"><label for="c">Comentaris <span style="color:var(--mute);font-weight:400">(opcional)</span></label><textarea id="c" rows="3"></textarea></div>
-      <label class="chk"><input type="checkbox" id="ok"> He llegit i accepto que l'autoescola utilitzi les meves dades per contactar-me sobre aquesta sol·licitud.</label>
-      <div class="err" id="err"></div>
-      <button class="btn dark lg" type="submit" style="width:100%">Enviar la sol·licitud</button>
-      <p class="demo-n">Entorn de demostració: la sol·licitud es desa en aquest navegador i apareix a l'apartat Preinscripcions de la vista d'autoescola.</p>
-    </form>
-    <div class="done" id="done">
-      <h2>Sol·licitud enviada</h2>
-      <p style="color:var(--ink2);margin-bottom:20px">Hem rebut les teves dades. L'autoescola es posarà en contacte amb tu aviat per confirmar la matrícula.</p>
-      <a class="btn line" href="index.html">Tornar a la presentació</a>
-    </div>
-  </section>
+<main class="enr">
+  <header class="head"><p class="eyebrow" data-school>Autoescola Bages</p><h1>Tria el teu carnet i inscriu-te</h1><p>Tots els permisos: moto, cotxe, remolc, camió i autobús. L'autoescola et confirma la matrícula i no cal pagar res ara.</p></header>
+  <div id="matricula"><noscript><p class="mat-note">Cal activar JavaScript per inscriure's.</p></noscript></div>
 </main>
 
-<footer class="foot"><div class="wrap foot-in"><span class="brand sm"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg><span>VIAL</span></span><span>Prototip de demostració. Les dades que apareixen són fictícies.</span></div></footer>
+<footer class="end"><span>Prototip de demostració. Les dades que apareixen són fictícies.</span><span>Vial</span></footer>
 
-<script>
-const PERMITS = [
-  { k: 'AM', n: 'AM', d: 'Ciclomotor', h: 38, hrs: 8 }, { k: 'A1', n: 'A1', d: 'Moto fins a 125 cc', h: 42, hrs: 10 },
-  { k: 'A2', n: 'A2', d: 'Moto de potència mitjana', h: 45, hrs: 12 }, { k: 'A', n: 'A', d: 'Moto sense límit', h: 48, hrs: 12 },
-  { k: 'B', n: 'B', d: 'Cotxe', h: 40, hrs: 20 }, { k: 'BE', n: 'B+E', d: 'Cotxe amb remolc', h: 55, hrs: 10 },
-  { k: 'C1', n: 'C1', d: 'Camió lleuger', h: 60, hrs: 20 }, { k: 'C', n: 'C', d: 'Camió', h: 65, hrs: 24 },
-  { k: 'CE', n: 'C+E', d: 'Camió amb remolc', h: 70, hrs: 12 }, { k: 'D', n: 'D', d: 'Autobús', h: 75, hrs: 24 },
-];
-const eur = n => n.toLocaleString('ca-ES', { style: 'currency', currency: 'EUR' });
-const $ = s => document.querySelector(s);
-const pr = p => Math.round((290 + 94.05 + p.hrs * p.h) * .92 / 10) * 10;
-$('#p').innerHTML = PERMITS.map(p => `<option value="${p.k}" ${p.k === 'B' ? 'selected' : ''}>${p.n} · ${p.d}</option>`).join('');
-function upd() { const p = PERMITS.find(x => x.k === $('#p').value); $('#price').innerHTML = `Preu orientatiu del carnet complet: <b>${eur(pr(p))}</b> (${p.hrs} pràctiques incloses). Pràctica solta: ${eur(p.h)} l'hora.`; }
-$('#p').addEventListener('change', upd); upd();
-$('#f').addEventListener('submit', e => {
-  e.preventDefault();
-  const n = $('#n').value.trim(), t = $('#t').value.trim(), m = $('#m').value.trim(), err = $('#err');
-  const bad = !n ? 'Indica el teu nom i cognoms.' : !/^[0-9 +]{9,}$/.test(t) ? 'Indica un telèfon vàlid.' : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m) ? 'Indica un correu electrònic vàlid.' : !$('#ok').checked ? 'Cal acceptar l\'ús de les dades per poder contactar amb tu.' : '';
-  if (bad) { err.textContent = bad; err.style.display = 'block'; return; }
-  err.style.display = 'none';
-  let list = []; try { list = JSON.parse(localStorage.getItem('vial-preinscripcions') || '[]'); } catch { }
-  list.push({ id: 'pr' + Date.now(), n, tel: t, mail: m, p: $('#p').value, fr: $('#fr').value, nota: $('#c').value.trim(), ts: Date.now(), st: 'nova' });
-  try { localStorage.setItem('vial-preinscripcions', JSON.stringify(list)); } catch { }
-  $('#f').style.display = 'none'; $('#done').style.display = 'block';
-});
-</script>
+<script src="sync-config.js"></script>
+<script src="matricula.js"></script>
 </body>
 </html>

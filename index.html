@@ -5,195 +5,328 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vial · Programari de gestió per a autoescoles</title>
 <meta name="description" content="Vial és el programari de gestió per a autoescoles: reserves, seguiment de l'alumne, tràmits, cobraments i exàmens, amb la marca i el domini de cada centre.">
-<meta name="theme-color" content="#12161c">
+<meta name="theme-color" content="#05070a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2312202f' fill-rule='evenodd' d='M0 0H32V32H0Z M8 8H12.4L16 17L19.6 8H24L18 24H14Z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="media/web/d-direccio.jpg">
 <link rel="stylesheet" href="landing.css">
+<script>document.documentElement.className='js'</script>
 </head>
 <body>
+<a class="skip" href="#plataforma">Saltar al contingut</a>
+
+<div class="topbar"><span>Matrícula oberta<span class="tl"> per a tots els carnets</span>.</span> <a href="#inscripcio">Inscriu-te</a></div>
+
 <header class="nav">
-  <div class="wrap nav-in">
-    <a class="brand" href="#top" aria-label="Vial">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>
-      <span>VIAL</span>
-    </a>
-    <nav aria-label="Seccions">
-      <a href="#plataforma">Plataforma</a>
-      <a href="#funcions">Funcions</a>
-      <a href="#marca-blanca">Marca blanca</a>
-      <a href="#seguretat">Dades i seguretat</a>
-      <a href="#implantacio">Implantació</a>
-      <a href="#preguntes">Preguntes</a>
-    </nav>
-    <a class="btn dark" href="app.html">Accedir a la demostració</a>
+  <nav class="nav__links" aria-label="Seccions">
+    <a href="#plataforma">Plataforma</a>
+    <a href="#examen">Mode examen</a>
+    <a href="#funcions">Funcions</a>
+    <a href="#marca-blanca">Marca blanca</a>
+  </nav>
+  <button class="nav__burger" aria-label="Menú" aria-expanded="false" aria-controls="drawer"><i></i><i></i></button>
+  <a class="brand" href="#top" aria-label="Vial">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>
+    <span>VIAL</span>
+  </a>
+  <div class="nav__right">
+    <a href="#preguntes">Preguntes</a>
+    <a class="pill pill--small pill--ghost nav__enr" href="#inscripcio">Inscriu-te</a>
+    <a class="pill pill--small" href="app.html">Demostració</a>
   </div>
 </header>
 
+<div class="drawer" id="drawer" hidden>
+  <a href="#plataforma">Plataforma</a>
+  <a href="#examen">Mode examen</a>
+  <a href="#funcions">Funcions</a>
+  <a href="#marca-blanca">Marca blanca</a>
+  <a href="#seguretat">Dades i seguretat</a>
+  <a href="#preguntes">Preguntes</a>
+  <a href="#inscripcio">Inscripció als carnets</a>
+  <a class="pill pill--block" href="app.html">Accedir a la demostració</a>
+</div>
+
 <main id="top">
-<section class="hero">
-  <div class="wrap">
-    <p class="kicker">Programari de gestió per a autoescoles</p>
-    <h1>La gestió completa de l'autoescola, amb la marca del centre.</h1>
-    <p class="lead">Vial reuneix reserves, seguiment de l'alumne, tràmits, cobraments i exàmens en una única plataforma. Cada centre l'utilitza amb el seu nom, els seus colors i el seu domini.</p>
-    <div class="cta">
-      <a class="btn dark lg" href="app.html">Accedir a la demostració</a>
-      <a class="btn line lg" href="#video">Veure la presentació</a>
+
+<section class="hero" aria-label="Vial">
+  <div class="hero__text">
+    <h1><span>Tota l'autoescola.</span><span>Un sol lloc.</span></h1>
+    <p class="hero__sub" id="heroSub">Alumnes, cobraments, exàmens i xifres del centre, al dia.</p>
+    <div class="pills" role="group" aria-label="Perfil">
+      <button class="pill is-active" data-slide="0" aria-pressed="true" data-sub="Alumnes, cobraments, exàmens i xifres del centre, al dia.">Direcció</button>
+      <button class="pill" data-slide="1" aria-pressed="false" data-sub="L'agenda, cada classe registrada i el simulacre d'examen, des del mòbil.">Professorat</button>
+      <button class="pill" data-slide="2" aria-pressed="false" data-sub="L'alumne reserva, paga i veu el que li falta per al carnet.">Alumnat</button>
     </div>
   </div>
-
-  <div class="wrap" id="video">
-    <div class="player">
-      <video id="vv" autoplay muted loop playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate" poster="media/vial-animacio-poster.jpg" aria-label="Presentació de Vial">
-        <source src="media/vial-animacio.mp4" type="video/mp4">
-        El navegador no pot reproduir el vídeo.
-      </video>
+  <div class="hero__stage">
+    <div class="scene is-active">
+      <figure class="win"><img src="media/web/d-direccio.jpg" width="2040" height="1275" alt="Panell de direcció amb les estadístiques del centre"></figure>
+      <figure class="phone"><div><img src="media/web/m-inici.jpg" width="780" height="1600" alt="Pantalla d'inici de l'alumne al mòbil"></div></figure>
     </div>
-    <p class="note">Presentació de 2 minuts. Les dades i els centres que hi apareixen són de mostra.</p>
+    <div class="scene">
+      <figure class="win"><img src="media/web/d-professor.jpg" width="2040" height="1275" alt="Agenda del professor a l'ordinador"></figure>
+      <figure class="phone"><div><img src="media/web/m-professor.jpg" width="780" height="1600" alt="Classes del dia del professor al mòbil"></div></figure>
+    </div>
+    <div class="scene scene--trio">
+      <figure class="phone"><div><img src="media/web/m-classes.jpg" width="780" height="1600" alt="Classes fetes amb la nota de cada una"></div></figure>
+      <figure class="phone"><div><img src="media/web/m-inici.jpg" width="780" height="1600" alt="Propera pràctica i progrés de l'alumne"></div></figure>
+      <figure class="phone"><div><img src="media/web/m-guia.jpg" width="780" height="1600" alt="Etapes del camí cap al carnet"></div></figure>
+    </div>
   </div>
+  <div class="hero__shade" aria-hidden="true"></div>
+  <div class="hero__progress" aria-hidden="true"><i></i><i></i><i></i></div>
 </section>
 
-<section class="band">
-  <div class="wrap facts">
-    <div><strong>10</strong><span>permisos de conduir, cadascun amb el seu temari, tràmits i professorat</span></div>
-    <div><strong>3</strong><span>perfils d'accés: direcció, professorat i alumnat</span></div>
-    <div><strong>Web i mòbil</strong><span>aplicació instal·lable al telèfon, sense passar per cap botiga d'aplicacions</span></div>
-    <div><strong>1 centre, 1 entorn</strong><span>base de dades i adreça pròpies per a cada autoescola</span></div>
-  </div>
-</section>
+<dl class="facts">
+  <div><dt>10 permisos</dt><dd>cadascun amb el seu temari, tràmits i professorat</dd></div>
+  <div><dt>3 perfils</dt><dd>direcció, professorat i alumnat sobre les mateixes dades</dd></div>
+  <div><dt>Web i mòbil</dt><dd>s'instal·la al telèfon sense passar per cap botiga d'aplicacions</dd></div>
+  <div><dt>La vostra marca</dt><dd>nom, color i adreça propis per a cada autoescola</dd></div>
+</dl>
 
-<section id="plataforma" class="sec">
-  <div class="wrap">
-    <p class="kicker">Plataforma</p>
-    <h2>Una vista de treball per a cada perfil.</h2>
-    <p class="sub">Tots els perfils treballen sobre les mateixes dades. Cada canvi es reflecteix a l'instant en la resta de dispositius.</p>
-    <div class="cols3">
-      <article>
+<section class="sec" id="plataforma">
+  <header class="head rv">
+    <p class="eyebrow">Plataforma</p>
+    <h2>Una vista per a cada persona</h2>
+    <p>Tothom treballa sobre les mateixes dades. Amb el servidor del centre, cada canvi arriba a l'instant a la resta de dispositius.</p>
+  </header>
+  <div class="cards">
+    <article class="card rv">
+      <div class="card__img"><figure class="win"><img src="media/web/d-resum.jpg" width="2040" height="1275" loading="lazy" alt="Resum de direcció amb les tasques del dia"></figure></div>
+      <div class="card__body">
         <h3>Direcció</h3>
-        <p>Control de l'activitat del centre.</p>
-        <ul><li>Estadístiques: clients nous, aprovats a la primera, pràctiques mitjanes</li><li>Alumnes per fase i per permís</li><li>Professorat, vehicles i horaris</li><li>Packs, cupons i política de cancel·lació</li><li>Liquidació mensual del professorat</li><li>Importació i exportació en CSV</li></ul>
-      </article>
-      <article>
+        <p>El que cal fer avui i com va el centre.</p>
+        <ul><li>Tasques pendents ordenades per prioritat</li><li>Estadístiques: aprovats a la primera i pràctiques mitjanes</li><li>Alumnes per fase i per permís</li><li>Packs, cupons i liquidació del professorat</li></ul>
+        <a class="pill pill--small" href="app.html">Entrar com a direcció</a>
+      </div>
+    </article>
+    <article class="card rv">
+      <div class="card__img">
+        <figure class="phone p1"><div><img src="media/web/m-professor.jpg" width="780" height="1600" loading="lazy" alt="Vista Avui del professor"></div></figure>
+        <figure class="phone p2"><div><img src="media/web/m-agenda.jpg" width="780" height="1600" loading="lazy" alt="Agenda del professor"></div></figure>
+      </div>
+      <div class="card__body">
         <h3>Professorat</h3>
-        <p>Agenda i seguiment dels seus alumnes.</p>
-        <ul><li>Agenda del dia i de la setmana</li><li>Registre de cada classe amb nota i temari</li><li>Simulacre d'examen amb cronòmetre</li><li>Inscripció d'alumnes a examen</li><li>Bloqueig d'hores no disponibles</li><li>Avisos als alumnes</li></ul>
-      </article>
-      <article>
+        <p>La jornada sencera a la butxaca.</p>
+        <ul><li>Agenda del dia i bloqueig d'hores</li><li>Nota i temari de cada classe</li><li>Simulacre d'examen pràctic</li><li>Recorregut GPS de la pràctica</li></ul>
+        <a class="pill pill--small" href="app.html">Entrar com a professor</a>
+      </div>
+    </article>
+    <article class="card rv">
+      <div class="card__img"><figure class="phone"><div><img src="media/web/m-guia.jpg" width="780" height="1600" loading="lazy" alt="Progrés de l'alumne cap al carnet"></div></figure></div>
+      <div class="card__body">
         <h3>Alumnat</h3>
-        <p>Aplicació al mòbil amb la imatge del centre.</p>
-        <ul><li>Reserva i anul·lació de pràctiques</li><li>Guia de progrés cap al carnet</li><li>Documents amb avís de caducitat</li><li>Tests, vídeos de teoria i historial</li><li>Pagament i contractació de packs</li><li>Xat amb el centre</li></ul>
-      </article>
-    </div>
+        <p>L'aplicació de la vostra autoescola.</p>
+        <ul><li>Reserva i anul·lació de pràctiques</li><li>Camí cap al carnet, pas a pas</li><li>Tests, vídeos de teoria i documents</li><li>Pagament i contractació de packs</li></ul>
+        <a class="pill pill--small" href="https://lligacat.github.io/vial-app/">Obrir l'app d'alumne</a>
+      </div>
+    </article>
   </div>
 </section>
 
-<section id="funcions" class="sec alt">
-  <div class="wrap">
-    <p class="kicker">Funcions</p>
-    <h2>Els processos del centre, dins d'una sola eina.</h2>
-    <dl class="rows">
-      <div><dt>Reserves</dt><dd>Calendari amb les hores lliures de cada professor. L'alumne reserva i anul·la; el cost de l'anul·lació depèn de l'antelació i de la política del centre.</dd></div>
-      <div><dt>Seguiment de l'alumne</dt><dd>Nota i temari de cada classe, nivell per apartat, evolució i percentatge de progrés cap a l'examen.</dd></div>
-      <div><dt>Cobrament en línia</dt><dd>L'alumne paga dins l'aplicació amb targeta i altres mètodes de Stripe. El centre defineix si ofereix pagament fraccionat en quotes, amb recàrrec o sense. Cada pagament actualitza l'estat del rebut al moment.</dd></div>
-      <div><dt>Cobraments</dt><dd>Carnet complet, bons de pràctiques, quotes i cupons. Factures descarregables i control de quotes pendents.</dd></div>
-      <div><dt>Documentació</dt><dd>L'alumne puja el certificat mèdic o el DNI des del mòbil. El centre els valida i el sistema avisa abans que caduquin.</dd></div>
-      <div><dt>Exàmens</dt><dd>Inscripció a examen, historial d'intents amb resultat i observacions, i simulacre previ amb faltes lleus, deficients i eliminatòries.</dd></div>
-      <div><dt>Tràmits</dt><dd>Llista de passos per permís, cadascun amb el seu estat: pendent, en revisió o validat.</dd></div>
-      <div><dt>Automatitzacions</dt><dd>Regles configurables que envien recordatoris de classe, avisos de caducitat, impagats i alumnes inactius, sense intervenció del personal.</dd></div>
-      <div><dt>Estadístiques</dt><dd>Clients nous per mes, percentatge d'aprovats a la primera, alumnes per carnet, pràctiques mitjanes fins a aprovar i historial mensual, amb descàrrega en CSV.</dd></div>
-      <div><dt>Fases i embuts</dt><dd>Quadre d'alumnes per fase i permís per detectar on s'acumulen.</dd></div>
-      <div><dt>Contractes</dt><dd>Contracte de matrícula generat amb les dades de l'alumne, amb signatura i descàrrega.</dd></div>
-      <div><dt>Inscripció en línia</dt><dd>Formulari públic de preinscripció i xat intern entre el centre, el professorat i l'alumnat.</dd></div>
-    </dl>
+<section class="exam" id="examen">
+  <header class="head rv">
+    <p class="eyebrow">Mode examen</p>
+    <h2>L'examen pràctic, abans de l'examen</h2>
+    <p>El professor fa d'examinador amb el seu mòbil: dona les instruccions, marca les faltes i l'alumne rep l'acta en acabar.</p>
+  </header>
+  <div class="exam__phones">
+    <figure class="rv"><div class="phone"><div><img src="media/web/m-examen-llista.jpg" width="780" height="1600" loading="lazy" alt="Selecció de l'alumne per al simulacre"></div></div><figcaption>Es tria l'alumne</figcaption></figure>
+    <figure class="rv"><div class="phone"><div><img src="media/web/m-examen.jpg" width="780" height="1600" loading="lazy" alt="Full de faltes amb el cronòmetre i el veredicte"></div></div><figcaption>Es marquen les faltes</figcaption></figure>
+    <figure class="rv"><div class="phone"><div><img src="media/web/m-itinerari.jpg" width="780" height="1600" loading="lazy" alt="Itinerari amb la següent instrucció"></div></div><figcaption>Es segueix l'itinerari</figcaption></figure>
+  </div>
+  <dl class="specs">
+    <div><dt>Faltes</dt><dd>Lleus, deficients<br>i eliminatòries</dd></div>
+    <div><dt>Itinerari</dt><dd>Instrucció<br>a instrucció</dd></div>
+    <div><dt>Vehicles</dt><dd>Cotxe, moto,<br>remolc i pesants</dd></div>
+    <div><dt>Acta</dt><dd>Veredicte, temps<br>i registre</dd></div>
+  </dl>
+  <p class="fine">És un simulacre de pràctica, sense valor oficial. Els itineraris i els criteris són orientatius i el centre els pot adaptar.</p>
+</section>
+
+<section class="details" aria-label="Detalls de l'aplicació">
+  <figure class="rv"><div class="shot"><img src="media/web/z-reserves.jpg" loading="lazy" alt="Calendari de reserves"></div><figcaption><h3>Reserves</h3><p>L'alumne tria dia i hora entre els forats lliures de cada professor.</p></figcaption></figure>
+  <figure class="rv"><div class="shot"><img src="media/web/z-pagaments.jpg" loading="lazy" alt="Carnet complet amb opció de pagament fraccionat"></div><figcaption><h3>Pagaments</h3><p>Carnet complet o per packs, amb quotes si el centre les ofereix. Amb Stripe, dins l'aplicació.</p></figcaption></figure>
+  <figure class="rv"><div class="shot"><img src="media/web/z-estadistiques.jpg" loading="lazy" alt="Gràfics de clients nous i exàmens aprovats"></div><figcaption><h3>Estadístiques</h3><p>Clients nous, aprovats a la primera i historial mes a mes.</p></figcaption></figure>
+</section>
+
+<section class="sec" id="funcions">
+  <header class="head rv"><p class="eyebrow">Funcions</p><h2>Tot el que fa el centre</h2></header>
+  <div class="funcs">
+    <div class="rv"><h3>Reserves</h3><p>Calendari amb les hores lliures. El cost d'una anul·lació depèn de l'antelació i de la política del centre.</p></div>
+    <div class="rv"><h3>Ofertes d'última hora</h3><p>Les hores que queden lliures s'ofereixen a preu reduït als alumnes que les poden aprofitar.</p></div>
+    <div class="rv"><h3>Seguiment</h3><p>Nota i temari de cada classe, nivell per apartat i progrés cap a l'examen.</p></div>
+    <div class="rv"><h3>Cobraments en línia</h3><p>Targeta i altres mètodes de Stripe, amb pagament fraccionat si el centre l'activa.</p></div>
+    <div class="rv"><h3>Rebuts i factures</h3><p>Carnet complet, bons de pràctiques, quotes i cupons, amb factures descarregables.</p></div>
+    <div class="rv"><h3>Documentació</h3><p>L'alumne puja el DNI o el certificat mèdic i el sistema avisa abans que caduquin.</p></div>
+    <div class="rv"><h3>Exàmens</h3><p>Inscripció, historial d'intents amb resultat i observacions, i simulacre previ.</p></div>
+    <div class="rv"><h3>Tests de teòric</h3><p>Preguntes pròpies per temes i un test que insisteix en el que l'alumne falla.</p></div>
+    <div class="rv"><h3>Tràmits</h3><p>Passos de cada permís amb el seu estat: pendent, en revisió o validat.</p></div>
+    <div class="rv"><h3>Avisos</h3><p>Recordatoris, caducitats i impagats dins l'app. SMS o WhatsApp amb un compte de Twilio.</p></div>
+    <div class="rv"><h3>Estadístiques</h3><p>Alumnes per carnet, pràctiques mitjanes fins a aprovar i descàrrega en CSV.</p></div>
+    <div class="rv"><h3>Fases i embuts</h3><p>Quadre d'alumnes per fase i permís per veure on s'acumulen.</p></div>
+    <div class="rv"><h3>Contractes</h3><p>Contracte de matrícula amb les dades de l'alumne, amb signatura i descàrrega.</p></div>
+    <div class="rv"><h3>Inscripció en línia</h3><p>L'alumne tria el carnet, veu el preu i s'inscriu; la sol·licitud arriba a direcció.</p></div>
+    <div class="rv"><h3>Xat i vehicles</h3><p>Conversa amb alumnes i professors, i control d'ITV i assegurances de la flota.</p></div>
   </div>
 </section>
 
-<section id="marca-blanca" class="sec">
-  <div class="wrap split">
-    <div>
-      <p class="kicker">Marca blanca</p>
-      <h2>El programari és de Vial. La imatge és del centre.</h2>
-      <p class="sub">Els alumnes no veuen cap referència a Vial: entren a l'aplicació de la seva autoescola, amb el nom, el logotip i els colors del centre.</p>
-      <div class="cta"><a class="btn dark" href="https://lligacat.github.io/vial-app/">Obrir una aplicació de mostra</a></div>
+<section class="sec" id="video">
+  <header class="head rv"><p class="eyebrow">Presentació</p><h2>Vial en moviment</h2></header>
+  <div class="player rv">
+    <video id="vv" muted loop playsinline preload="none" disablepictureinpicture controlslist="nodownload noplaybackrate" poster="media/vial-animacio-poster.jpg" aria-label="Presentació animada de Vial">
+      <source src="media/vial-animacio.mp4" type="video/mp4">
+      El navegador no pot reproduir el vídeo.
+    </video>
+  </div>
+  <p class="note">Presentació de 2 minuts. Les dades i els centres que hi apareixen són de mostra.</p>
+</section>
+
+<section class="sec brandsec" id="marca-blanca">
+  <div class="rv">
+    <header class="head">
+      <p class="eyebrow">Marca blanca</p>
+      <h2>El programari és Vial.<br>La imatge és vostra.</h2>
+      <p>Els alumnes entren a l'aplicació de la seva autoescola, amb el seu nom i el seu color. Proveu-ho:</p>
+    </header>
+    <div class="swatches" role="group" aria-label="Exemples de marca">
+      <button class="swatch" style="--c:#3e6ae1" data-brand="0" aria-pressed="true">Bages</button>
+      <button class="swatch" style="--c:#0f7a55" data-brand="1" aria-pressed="false">Marina</button>
+      <button class="swatch" style="--c:#c8362d" data-brand="2" aria-pressed="false">Pirineu</button>
     </div>
-    <ul class="checks">
-      <li><b>Imatge del centre</b>Nom, monograma i color corporatiu aplicats a tota l'aplicació.</li>
-      <li><b>Adreça pròpia</b>L'aplicació es serveix des d'un subdomini del centre, per exemple <span class="mono">app.autoescolabages.cat</span>.</li>
-      <li><b>Integració al web</b>S'enllaça des de la pàgina existent de l'autoescola, sense obligar a canviar-la.</li>
-      <li><b>Mòduls a mida</b>El centre activa només les funcions que necessita: tests, vídeos, contractes, automatitzacions...</li>
+    <ul class="list">
+      <li><b>Adreça pròpia</b>L'aplicació es pot servir des d'un subdomini del centre.</li>
+      <li><b>El web actual es manté</b>Només cal enllaçar l'aplicació des de la pàgina de sempre.</li>
+      <li><b>Mòduls a mida</b>Cada centre activa només les funcions que necessita.</li>
     </ul>
   </div>
-</section>
-
-<section id="seguretat" class="sec alt">
-  <div class="wrap split">
-    <div>
-      <p class="kicker">Dades i seguretat</p>
-      <h2>Les dades de cada centre, separades i sota control.</h2>
-      <p class="sub">Cada autoescola funciona sobre la seva pròpia base de dades. Les dades no es barregen entre centres.</p>
-    </div>
-    <ul class="checks">
-      <li><b>Comptes individuals</b>Cada persona accedeix amb el seu correu i contrasenya. Les contrasenyes es desen xifrades i les sessions caduquen.</li>
-      <li><b>Registre de canvis</b>Cada modificació queda registrada amb l'usuari que l'ha fet i el moment.</li>
-      <li><b>Base de dades SQL</b>Format estàndard, amb còpies de seguretat i exportació de les dades del centre en qualsevol moment.</li>
-      <li><b>Connexió xifrada</b>L'accés es fa sempre per HTTPS.</li>
-    </ul>
+  <div class="stack rv">
+    <figure class="phone phone--dark" data-pos="0"><div><img src="media/web/marca-1.jpg" width="780" height="1600" loading="lazy" alt="Accés de l'aplicació amb la marca Autoescola Bages"></div></figure>
+    <figure class="phone phone--dark" data-pos="1"><div><img src="media/web/marca-2.jpg" width="780" height="1600" loading="lazy" alt="Accés de l'aplicació amb la marca Autoescola Marina"></div></figure>
+    <figure class="phone phone--dark" data-pos="2"><div><img src="media/web/marca-3.jpg" width="780" height="1600" loading="lazy" alt="Accés de l'aplicació amb la marca Autoescola Pirineu"></div></figure>
   </div>
 </section>
 
-<section id="implantacio" class="sec">
-  <div class="wrap">
-    <p class="kicker">Implantació</p>
-    <h2>De la contractació al primer dia d'ús.</h2>
-    <ol class="steps four">
-      <li><span>01</span><h3>Configuració</h3><p>Es defineixen la imatge del centre, els permisos que s'imparteixen, els preus, els packs i la política de cancel·lació.</p></li>
-      <li><span>02</span><h3>Càrrega de dades</h3><p>S'importen els alumnes, el professorat i els vehicles existents a partir de fitxers CSV.</p></li>
-      <li><span>03</span><h3>Comptes i accessos</h3><p>Es creen els comptes del personal i es convida els alumnes a accedir a l'aplicació.</p></li>
-      <li><span>04</span><h3>Posada en marxa</h3><p>El centre comença a treballar amb Vial. Els alumnes reserven, el professorat registra i la direcció consulta.</p></li>
-    </ol>
+<section class="sec" id="seguretat">
+  <header class="head rv">
+    <p class="eyebrow">Dades i seguretat</p>
+    <h2>Les dades de cada centre, a part</h2>
+    <p>Cada autoescola té la seva pròpia base de dades. No es barregen mai entre centres.</p>
+  </header>
+  <div class="tiles">
+    <article class="tile rv"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><div><h3>Comptes propis</h3><p>Correu i contrasenya per persona. Les contrasenyes es desen xifrades i les sessions caduquen.</p></div></article>
+    <article class="tile rv"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3 4 6v6c0 4.6 3.3 7.7 8 9 4.7-1.3 8-4.4 8-9V6z"/><path d="m8.500 12 2.500 2.500 4.500-5"/></svg><div><h3>Permisos per perfil</h3><p>El servidor només envia a cada persona les dades que li pertoquen.</p></div></article>
+    <article class="tile rv"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="12" cy="5.500" rx="7.500" ry="2.800"/><path d="M4.500 5.500v13c0 1.500 3.400 2.800 7.500 2.800s7.500-1.300 7.500-2.800v-13M4.500 12c0 1.500 3.400 2.800 7.500 2.800s7.500-1.300 7.500-2.800"/></svg><div><h3>Còpies diàries</h3><p>Base de dades SQL amb còpia cada dia i exportació de les dades quan el centre vulgui.</p></div></article>
+    <article class="tile rv"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h7"/></svg><div><h3>Registre de canvis</h3><p>Cada modificació queda anotada amb qui l'ha fet i quan.</p></div></article>
   </div>
 </section>
 
-<section id="permisos" class="sec alt slim">
-  <div class="wrap">
-    <p class="kicker">Permisos</p>
-    <h2>Cobertura de tots els permisos de conduir.</h2>
-    <div class="chips">
-      <span>AM</span><span>A1</span><span>A2</span><span>A</span><span>B</span><span>B+E</span><span>C1</span><span>C</span><span>C+E</span><span>D</span>
-    </div>
+<section class="sec steps" id="implantacio">
+  <header class="head">
+    <p class="eyebrow">Implantació</p>
+    <h2>De la contractació al primer dia</h2>
+  </header>
+  <ol>
+    <li class="rv"><span>1</span><div><h3>Configuració</h3><p>La imatge del centre, els permisos que s'imparteixen, preus, packs i política de cancel·lació.</p></div></li>
+    <li class="rv"><span>2</span><div><h3>Càrrega de dades</h3><p>Alumnes, professorat i vehicles s'importen a partir de fitxers CSV.</p></div></li>
+    <li class="rv"><span>3</span><div><h3>Comptes i accessos</h3><p>Es creen els comptes del personal i es convida els alumnes.</p></div></li>
+    <li class="rv"><span>4</span><div><h3>En marxa</h3><p>Els alumnes reserven, el professorat registra i la direcció consulta.</p></div></li>
+  </ol>
+</section>
+
+<section class="sec mat" id="inscripcio">
+  <header class="head rv"><p class="eyebrow">Inscripció en línia · <span data-school>Autoescola Bages</span></p><h2>Tria el teu carnet</h2><p>Inscriu-te a qualsevol permís en un minut. L'autoescola et confirma la matrícula i no cal pagar res ara.</p></header>
+  <div id="matricula"><noscript><p class="mat-note">Cal activar JavaScript per inscriure's.</p></noscript></div>
+</section>
+
+<section class="sec" id="preguntes">
+  <header class="head rv"><p class="eyebrow">Preguntes freqüents</p><h2>Informació pràctica</h2></header>
+  <div class="faq rv">
+    <details><summary>Cal instal·lar algun programa?</summary><p>No. Vial funciona des del navegador i, al mòbil, es pot instal·lar com una aplicació des de la mateixa pàgina.</p></details>
+    <details><summary>Podem mantenir el nostre web actual?</summary><p>Sí. L'aplicació s'enllaça des del web del centre i es pot servir des d'un subdomini propi. No cal substituir la pàgina existent.</p></details>
+    <details><summary>On es guarden les dades?</summary><p>En una base de dades SQL dedicada a cada centre, en un servidor amb connexió xifrada. El centre pot exportar les seves dades quan vulgui.</p></details>
+    <details><summary>Els alumnes reben avisos?</summary><p>Sí: reserves, canvis, notes, pagaments i recordatoris arriben dins de l'aplicació, i com a notificació del dispositiu mentre està oberta. També es poden enviar per SMS o WhatsApp amb un compte de Twilio, que té un cost per missatge.</p></details>
+    <details><summary>Es poden importar els alumnes actuals?</summary><p>Sí, mitjançant un fitxer CSV. També es poden exportar en el mateix format.</p></details>
+    <details><summary>Les dades de la demostració són reals?</summary><p>No. Tots els noms, imports i centres de la demostració són ficticis i es poden modificar lliurement.</p></details>
   </div>
 </section>
 
-<section id="preguntes" class="sec">
-  <div class="wrap faq-wrap">
-    <div><p class="kicker">Preguntes freqüents</p><h2>Informació pràctica.</h2></div>
-    <div class="faq">
-      <details><summary>Cal instal·lar algun programa?</summary><p>No. Vial funciona des del navegador i, al mòbil, es pot instal·lar com una aplicació des de la mateixa pàgina.</p></details>
-      <details><summary>Podem mantenir el nostre web actual?</summary><p>Sí. L'aplicació s'enllaça des del web del centre i es pot servir des d'un subdomini propi. No cal substituir la pàgina existent.</p></details>
-      <details><summary>On es guarden les dades?</summary><p>En una base de dades SQL dedicada a cada centre, en un servidor amb connexió xifrada. El centre pot exportar les seves dades quan vulgui.</p></details>
-      <details><summary>Els alumnes reben avisos?</summary><p>Sí: reserves, canvis, notes, pagaments i recordatoris arriben dins de l'aplicació, i com a notificació del dispositiu mentre està oberta. Les notificacions amb l'aplicació tancada estan en desenvolupament.</p></details>
-      <details><summary>Es poden importar els alumnes actuals?</summary><p>Sí, mitjançant un fitxer CSV. També es poden exportar en el mateix format.</p></details>
-      <details><summary>Les dades de la demostració són reals?</summary><p>No. Tots els noms, imports i centres de la demostració són fictícies i es poden modificar lliurement.</p></details>
-    </div>
+<section class="sec" id="provar">
+  <header class="head rv"><p class="eyebrow">Proveu-la</p><h2>Vial amb dades de mostra</h2><p>Sense registre. Trieu per on voleu començar.</p></header>
+  <div class="help">
+    <article class="rv"><h3>Ordinador</h3><p>El panell complet: direcció, professorat i alumnat.</p><a class="pill pill--small" href="app.html">Accedir a la demostració</a></article>
+    <article class="rv"><h3>Mòbil</h3><p>L'aplicació d'una autoescola, tal com la veuen l'alumne i el professor.</p><a class="pill pill--small pill--ghost" href="https://lligacat.github.io/vial-app/">Obrir l'app</a></article>
+    <article class="rv"><h3>Inscripció</h3><p>La pàgina de carnets que el centre enllaça des del seu web.</p><a class="pill pill--small pill--ghost" href="inscripcio.html">Veure la pàgina</a></article>
   </div>
 </section>
 
-<section class="closing">
-  <div class="wrap">
-    <h2>Provi Vial amb dades de mostra.</h2>
-    <p>Pot entrar com a alumne, professor o direcció i recórrer totes les pantalles. No cal registrar-se.</p>
-    <a class="btn light lg" href="app.html">Accedir a la demostració</a> <a class="btn lg" style="color:#fff;border-color:#4a5360" href="inscripcio.html">Veure el formulari d'inscripció</a>
-  </div>
-</section>
 </main>
 
 <footer class="foot">
-  <div class="wrap foot-in">
-    <span class="brand sm"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg><span>VIAL</span></span>
-    <span>Versió de demostració. Les dades que hi apareixen són fictícies.</span>
+  <div class="foot__cols">
+    <div><a class="brand" href="#top" aria-label="Vial"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 9.5 16 23l6.5-13.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg><span>VIAL</span></a><p>Programari de gestió per a autoescoles, amb la marca de cada centre.</p></div>
+    <div><h3>Producte</h3><ul><li><a href="#plataforma">Plataforma</a></li><li><a href="#examen">Mode examen</a></li><li><a href="#funcions">Funcions</a></li><li><a href="#marca-blanca">Marca blanca</a></li></ul></div>
+    <div><h3>Centre</h3><ul><li><a href="#seguretat">Dades i seguretat</a></li><li><a href="#implantacio">Implantació</a></li><li><a href="#preguntes">Preguntes</a></li></ul></div>
+    <div><h3>Demostració</h3><ul><li><a href="app.html">Panell web</a></li><li><a href="https://lligacat.github.io/vial-app/">App mòbil</a></li><li><a href="#inscripcio">Inscripció</a></li></ul></div>
   </div>
+  <svg class="foot__word" viewBox="0 0 1000 210" aria-hidden="true"><text x="500" y="190" text-anchor="middle" textLength="990" lengthAdjust="spacingAndGlyphs" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1" style="font-family:Archivo,sans-serif;font-weight:700;font-stretch:125%;font-size:260px">VIAL</text></svg>
+  <div class="foot__row"><span>Versió de demostració. Les dades que hi apareixen són fictícies.</span><span>Vial</span></div>
 </footer>
-<script>(function(){var v=document.getElementById('vv');if(!v)return;v.muted=true;var p=function(){var r=v.play();if(r&&r.catch)r.catch(function(){});};p();document.addEventListener('visibilitychange',function(){if(!document.hidden)p();});window.addEventListener('pointerdown',p,{once:true});})();</script>
+
+<script src="sync-config.js"></script>
+<script src="matricula.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); }, $$ = function (s) { return [].slice.call(document.querySelectorAll(s)); };
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* barra */
+  function onScroll() { document.body.classList.toggle('is-scrolled', scrollY > 24); }
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  var burger = $('.nav__burger'), drawer = $('#drawer'), nav = $('.nav');
+  function menu(open) { burger.setAttribute('aria-expanded', open); drawer.hidden = !open; nav.classList.toggle('is-open', open); document.body.classList.toggle('menu-open', open); document.body.style.overflow = open ? 'hidden' : ''; }
+  burger.addEventListener('click', function () { menu(drawer.hidden); });
+  drawer.addEventListener('click', function (e) { if (e.target.closest('a')) menu(false); });
+  addEventListener('keydown', function (e) { if (e.key === 'Escape' && !drawer.hidden) menu(false); });
+  matchMedia('(min-width: 1101px)').addEventListener('change', function () { menu(false); });
+
+  /* portada: tres escenes amb barres de progrés */
+  var scenes = $$('.scene'), pills = $$('[data-slide]'), bars = $$('.hero__progress i'), i = 0, timer;
+  function go(n) {
+    i = (n + scenes.length) % scenes.length;
+    scenes.forEach(function (s, k) { s.classList.toggle('is-active', k === i); });
+    pills.forEach(function (p, k) { p.classList.toggle('is-active', k === i); p.setAttribute('aria-pressed', k === i); });
+    $('#heroSub').textContent = pills[i].dataset.sub;
+    bars.forEach(function (b, k) { b.classList.remove('is-active'); b.classList.toggle('is-done', k < i); });
+    clearTimeout(timer);
+    if (reduce) return;
+    void bars[i].offsetWidth; bars[i].classList.add('is-active');
+    timer = setTimeout(function () { go(i + 1); }, 6000);
+  }
+  pills.forEach(function (p, k) { p.addEventListener('click', function () { go(k); }); });
+  go(0);
+
+  /* marca blanca */
+  var phones = $$('.stack .phone'), sw = $$('[data-brand]');
+  sw.forEach(function (b, n) {
+    b.addEventListener('click', function () {
+      sw.forEach(function (x, k) { x.setAttribute('aria-pressed', k === n); });
+      phones.forEach(function (p, k) { p.dataset.pos = (k - n + 3) % 3; });
+    });
+  });
+
+  /* aparició en fer scroll */
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -8% 0px' });
+    $$('.rv').forEach(function (el) { io.observe(el); });
+    var v = $('#vv');
+    new IntersectionObserver(function (es) { if (es[0].isIntersecting && !reduce) { var r = v.play(); if (r) r.catch(function () {}); } else v.pause(); }, { threshold: .25 }).observe(v);
+    if (reduce) v.controls = true;
+  } else $$('.rv').forEach(function (el) { el.classList.add('is-in'); });
+})();
+</script>
 </body>
 </html>
